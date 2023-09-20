@@ -1,0 +1,11 @@
+This directory includes wpa-supplicant recipe and files from Comcores MACsec SW release.
+
+Comcores creates its own recipe for wpa-supplicant (instead of appending the original recipe in poky).
+
+Unfortunately we have to follow this practice to avoid merging conflicts with Comcores future releases.
+
+We will not modify recipes/files as long as possible for the same reason.
+
+Comcores release process: Comcores will notify ADI, ADI engineers will pull the release files from Comcores server.
+
+Current release version: 13.001

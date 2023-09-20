@@ -1,0 +1,81 @@
+diff --git a/src/drivers/driver_macsec_linux.c b/src/drivers/driver_macsec_linux.c
+index b609bbf38..21697d6c5 100644
+--- a/src/drivers/driver_macsec_linux.c
++++ b/src/drivers/driver_macsec_linux.c
+@@ -677,6 +677,46 @@ out_free_msg:
+ }
+ 
+ 
++/**
++ * macsec_drv_try_enable_hw_offload - Try to enable hardware offload if possible
++ * @priv: Private driver interface data
++ * Returns: 0 on success, -1 on failure (or if not supported)
++ */
++static int macsec_drv_try_enable_hw_offload(void *priv, enum macsec_offload offl)
++{
++	struct macsec_drv_data *drv = priv;
++	struct macsec_genl_ctx *ctx = &drv->ctx;
++	struct nl_msg *msg;
++	struct nlattr *nest;
++	int ret = -1;
++
++	wpa_printf(MSG_DEBUG, DRV_PREFIX "%s trying offl=%u", __func__, offl);
++
++	msg = msg_prepare(MACSEC_CMD_UPD_OFFLOAD, ctx, drv->ifi);
++	if (!msg)
++		return ret;
++
++	nest = nla_nest_start(msg, MACSEC_ATTR_OFFLOAD);
++	if (!nest)
++		goto nla_put_failure;
++
++	NLA_PUT_U8(msg, MACSEC_OFFLOAD_ATTR_TYPE, offl);
++
++	nla_nest_end(msg, nest);
++
++	ret = nl_send_recv(ctx->sk, msg);
++	if (ret < 0) {
++		wpa_printf(MSG_ERROR,
++			   DRV_PREFIX "failed to communicate: %d (%s)",
++			   ret, nl_geterror(-ret));
++	}
++
++ nla_put_failure:
++	nlmsg_free(msg);
++	return ret;
++}
++
++
+ /**
+  * macsec_drv_get_receive_lowest_pn - Get receive lowest PN
+  * @priv: Private driver interface data
+@@ -1180,7 +1220,28 @@ static int macsec_drv_create_transmit_sc(
+ 
+ 	/* In case some settings have already been done but we couldn't apply
+ 	 * them. */
+-	return try_commit(drv);
++	err = try_commit(drv);
++	if (err)
++		return err;
++
++	/* Try to enable MACsec hardware offloading */
++	err = macsec_drv_try_enable_hw_offload(drv, MACSEC_OFFLOAD_MAC);
++	if (err) {
++		err = macsec_drv_try_enable_hw_offload(drv, MACSEC_OFFLOAD_PHY);
++		if (err) {
++			wpa_printf(MSG_INFO, DRV_PREFIX
++				   "%s: MACSEC_OFFLOAD_OFF",
++				   drv->common.ifname);
++		} else {
++			wpa_printf(MSG_INFO, DRV_PREFIX
++				   "%s: MACSEC_OFFLOAD_PHY",
++				   drv->common.ifname);
++		}
++	} else {
++		wpa_printf(MSG_INFO, DRV_PREFIX
++			   "%s: MACSEC_OFFLOAD_MAC",
++			   drv->common.ifname);
++	}
+ }
+ 
+ 
