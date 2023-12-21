@@ -1,0 +1,76 @@
+diff --git a/init b/init
+index 13f0ecd37c..cec367c3d6 100644
+--- a/init
++++ b/init
+@@ -8,35 +8,42 @@
+ rngd=@SBINDIR@/rngd
+ test -x "$rngd" || exit 1
+ 
+-[ -r @SYSCONFDIR@/default/rng-tools ] && . "@SYSCONFDIR@/default/rng-tools"
++plat=$(tr -d '\0' < /proc/device-tree/chosen/boot/plat)
++# only run this service on hardware.
++if [[ $plat == "asic" ]]; then
+ 
+-case "$1" in
+-  start)
+-    echo -n "Starting random number generator daemon"
+-    start-stop-daemon -S -q -x $rngd -- $EXTRA_ARGS
+-    echo "."
+-    ;;
+-  stop)
+-    echo -n "Stopping random number generator daemon"
+-    start-stop-daemon -K -q -n rngd
+-    echo "."
+-    ;;
+-  reload|force-reload)
+-    echo -n "Signalling rng daemon restart"
+-    start-stop-daemon -K -q -s 1 -x $rngd
+-    start-stop-daemon -K -q -s 1 -x $rngd
+-    ;;
+-  restart)
+-    echo -n "Stopping random number generator daemon"
+-    start-stop-daemon -K -q -n rngd
+-    echo "."
+-    echo -n "Starting random number generator daemon"
+-    start-stop-daemon -S -q -x $rngd -- $EXTRA_ARGS
+-    echo "."
+-    ;;
+-  *)
+-    echo "Usage: @SYSCONFDIR@/init.d/rng-tools {start|stop|reload|restart|force-reload}"
+-    exit 1
+-esac
++    [ -r @SYSCONFDIR@/default/rng-tools ] && . "@SYSCONFDIR@/default/rng-tools"
++
++    case "$1" in
++      start)
++        echo -n "Starting random number generator daemon"
++        start-stop-daemon -S -q -x $rngd -- $EXTRA_ARGS
++        echo "."
++        ;;
++      stop)
++        echo -n "Stopping random number generator daemon"
++        start-stop-daemon -K -q -n rngd
++        echo "."
++        ;;
++      reload|force-reload)
++        echo -n "Signalling rng daemon restart"
++        start-stop-daemon -K -q -s 1 -x $rngd
++        start-stop-daemon -K -q -s 1 -x $rngd
++        ;;
++      restart)
++        echo -n "Stopping random number generator daemon"
++        start-stop-daemon -K -q -n rngd
++        echo "."
++        echo -n "Starting random number generator daemon"
++        start-stop-daemon -S -q -x $rngd -- $EXTRA_ARGS
++        echo "."
++        ;;
++      *)
++        echo "Usage: @SYSCONFDIR@/init.d/rng-tools {start|stop|reload|restart|force-reload}"
++        exit 1
++    esac
++else
++    echo "Random number generator daemon(rng-tools) skipped at simulation run"
++fi
+ 
+ exit 0

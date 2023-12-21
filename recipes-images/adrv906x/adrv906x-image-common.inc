@@ -29,6 +29,7 @@ IMAGE_INSTALL:append = " \
     libgpiod-tools \
     optee-apps \
     optee-apps-userspace \
+    rng-tools \
     adrv906xinit \
     socat \
     watchdog \
