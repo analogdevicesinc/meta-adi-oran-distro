@@ -1,0 +1,16 @@
+# Copyright 2020 - 2023 Analog Devices Inc.
+# Released under MIT licence
+
+[Unit]
+Description=adrv904x-rd-ru power off service
+DefaultDependencies=no
+Before=poweroff.target
+
+[Service]
+ExecStart=poweroff.sh
+Type=oneshot
+TimeoutStartSec=0
+
+
+[Install]
+WantedBy=poweroff.target

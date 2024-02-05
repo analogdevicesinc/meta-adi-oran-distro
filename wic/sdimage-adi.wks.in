@@ -1,0 +1,6 @@
+# Short-description: Create SD card image for the Analog Devices Styx/Kerberos devkits
+# Long-description: Creates a partitioned SD card image for the Analog Devices Styx/Kerberos devkits. Boot files are 
+# located in the first vfat partition.
+
+part --source bootimg-partition --ondisk mmcblk --fstype=vfat --label boot --active --align 1024 --fixed-size ${BOOT_SIZE}
+part / --source rootfs --ondisk mmcblk --fstype=ext4 --label root --align 1024 --fixed-size ${ROOTFS_SIZE}

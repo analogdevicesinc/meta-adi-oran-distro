@@ -1,0 +1,13 @@
+# Copyright 2020 - 2023 Analog Devices Inc.
+# Released under MIT licence
+
+[Unit]
+Description=ADI auto-run services at boot, e.g. environment setup, turning on transceivers,etc.
+
+[Service]
+ExecStart=startup.sh
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+

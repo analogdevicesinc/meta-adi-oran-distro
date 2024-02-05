@@ -1,0 +1,1 @@
+export ADI_PLATFORM_NAME='${platform_name}'

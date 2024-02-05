@@ -1,0 +1,13 @@
+# Copyright 2020 - 2023 Analog Devices Inc.
+# Released under MIT licence
+
+[Unit]
+Description=ADI auto-run temperature monitor service from boot time. It adjusts fan speed to cool system down at hot conditions.
+
+[Service]
+ExecStart=temp-mon.sh
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+

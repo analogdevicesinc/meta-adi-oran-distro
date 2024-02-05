@@ -1,0 +1,19 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    # 10/25G QSFP_0
+    eth0:
+      dhcp4: true
+      addresses:
+        - 172.16.0.42/16
+    # 10/25G QSFP_1
+    eth1:
+      dhcp4: true
+      addresses:
+        - 172.17.0.42/16
+    # 1G ETH_0 (RJ45)
+    eth2:
+      dhcp4: true
+      optional: true
+      addresses-fallback: [192.168.1.33/24]
