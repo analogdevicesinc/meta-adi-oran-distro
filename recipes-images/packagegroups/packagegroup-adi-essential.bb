@@ -8,6 +8,7 @@ PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = " \
 	e2fsprogs \
+	iperf2 \
 	iperf3 \
 	linuxptp \
 	openssh-sftp-server \

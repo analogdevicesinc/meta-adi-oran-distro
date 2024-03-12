@@ -1,0 +1,9 @@
+# Group-based device access controls
+KERNEL=="gpiochip0", OWNER:="root", GROUP:="gpio"
+KERNEL=="sram_mmap0", OWNER:="root", GROUP:="sram_mmap"
+KERNEL=="sram_mmap1", OWNER:="root", GROUP:="sram_mmap"
+KERNEL=="tee0", OWNER:="root", GROUP:="tee"
+KERNEL=="mtdblock3", OWNER:="root", GROUP:="bootcfg"
+KERNEL=="mtd*", OWNER:="root", GROUP:="disk"
+KERNEL=="mmcblk0p2", OWNER:="root", GROUP:="bootcfg"
+DEVPATH=="/devices/platform/*uio-adrv906x*/*", OWNER:="root", GROUP:="adi-oru-uio"
