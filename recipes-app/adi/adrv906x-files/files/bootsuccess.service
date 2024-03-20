@@ -1,0 +1,8 @@
+[Unit]
+Description=boot success setting service
+
+[Service]
+ExecStart=/usr/bin/optee_app_boot_successful
+
+[Install]
+WantedBy=multi-user.target

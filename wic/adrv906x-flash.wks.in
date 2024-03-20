@@ -1,0 +1,28 @@
+# Short-description: Create Samana wic image for nor flash
+# Long-description : Create Samana wic image for nor flash(w/o mbr/gpt headers)
+
+
+#1. boot partition(boot_a)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_A_PART_OFFSET}
+
+#2. boot partition(boot_b)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_B_PART_OFFSET}
+
+#3. bootctrl
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/bootctrl_cfg.bin" --fixed-size ${BOOTCTRL_PART_SIZE}  --offset ${BOOTCTRL_PART_OFFSET}
+
+#4. bootcfg
+part --source empty --fixed-size ${BOOTCFG_PART_SIZE} --offset ${BOOTCFG_PART_OFFSET}
+
+#5. fip partition(fip_a)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --fixed-size ${FIP_PART_SIZE} --offset ${FIP_A_PART_OFFSET}
+
+#6. fip partition(fip_b)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --fixed-size ${FIP_PART_SIZE} --offset ${FIP_B_PART_OFFSET}
+
+#7. kernel partition(kernel_a, signed FIT)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${KERNEL_FIT_IMAGE}" --fixed-size ${KERNEL_PART_SIZE} --offset ${KERNEL_A_PART_OFFSET}
+
+#8. kernel partition(kernel_b, signed FIT)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${KERNEL_FIT_IMAGE}" --fixed-size ${KERNEL_PART_SIZE} --offset ${KERNEL_B_PART_OFFSET}
+

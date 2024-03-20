@@ -1,0 +1,38 @@
+# Short-description: Create Samana wic image for SD/eMMC
+# Long-description : Create Samana wic image for SD/eMMC with mbr/gpt
+
+
+#1. bootctrl
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/bootctrl_cfg.bin" --part-name ${BOOTCTRL_PART_NAME} --fixed-size ${BOOTCTRL_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#2. bootcfg
+part --source empty --part-name ${BOOTCFG_PART_NAME} --fixed-size ${BOOTCFG_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#3. boot partition(boot_a)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_a --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#4. fip partition(fip_a)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name ${FIP_PART_NAME}_a --fixed-size ${FIP_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#5. kernel partition(kernel_a, signed FIT)
+part --source bootimg-partition --fstype=ext4 --part-name ${KERNEL_PART_NAME}_a --label ${KERNEL_PART_NAME}_a --active --fixed-size ${KERNEL_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#6. boot partition(boot_b)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_b --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#7. fip partition(fip_b)
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name ${FIP_PART_NAME}_b --fixed-size ${FIP_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#8. kernel partition(kernel_b, signed FIT)
+part --source bootimg-partition --fstype=ext4 --part-name ${KERNEL_PART_NAME}_b --label ${KERNEL_PART_NAME}_b --active --fixed-size ${KERNEL_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#9. Rootfs partition(rootfs_a)
+part --source rawcopy --sourceparams="file=${ROOTFS_IMAGE_DIR}/${DM_VERITY_IMAGE}-${MACHINE}.ext4.verity" --part-name ${ROOTFS_PART_NAME}_a --fixed-size ${ROOTFS_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#10. Rootfs partition(rootfs_b)
+part --source rawcopy --sourceparams="file=${ROOTFS_IMAGE_DIR}/${DM_VERITY_IMAGE}-${MACHINE}.ext4.verity" --part-name ${ROOTFS_PART_NAME}_b --fixed-size ${ROOTFS_PART_SIZE} --align ${PART_ALIGNMENT}
+
+#11. User data partition
+part rootfs/data --fstype=ext4 --part-name ${DATA_PART_NAME} --fixed-size ${DATA_PART_SIZE} --align ${PART_ALIGNMENT}
+
+bootloader --ptable gpt

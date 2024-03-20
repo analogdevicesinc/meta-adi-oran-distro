@@ -1,0 +1,35 @@
+#!/bin/sh
+
+jitterentropy=/usr/sbin/jitterentropy-rngd
+test -x "$jitterentropy" || exit 1
+
+case "$1" in
+  start)
+    echo -n "Starting jitterentropy daemon..."
+    start-stop-daemon -S -q -x $jitterentropy -- $EXTRA_ARGS
+    echo "done."
+    ;;
+  stop)
+    echo -n "Stopping jitterentropy daemon..."
+    start-stop-daemon -K -q -x $jitterentropy
+    echo "done."
+    ;;
+  reload|force-reload)
+    echo -n "Signalling jitterentropy daemon restart"
+    start-stop-daemon -K -q -s 1 -x $jitterentropy
+    start-stop-daemon -K -q -s 1 -x $jitterentropy
+    ;;
+  restart)
+    echo -n "Stopping jitterentropy daemon..."
+    start-stop-daemon -K -q -x $jitterentropy
+    echo "done."
+    echo -n "Starting jitterentropy daemon..."
+    start-stop-daemon -S -q -x $jitterentropy -- $EXTRA_ARGS
+    echo "done."
+    ;;
+  *)
+    echo "Usage: /etc/init.d/jitterentropy {start|stop|reload|restart|force-reload}"
+    exit 1
+esac
+
+exit 0

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+start() {
+        echo "Setting boot successful..."
+        /usr/bin/optee_app_boot_successful
+}
+
+case "$1" in
+        start)
+                "$1";;
+        stop|restart|reload)
+                ;;
+        *)
+        echo "Usage: $0 {start|stop|restart|reload}"
+        exit 1
+esac

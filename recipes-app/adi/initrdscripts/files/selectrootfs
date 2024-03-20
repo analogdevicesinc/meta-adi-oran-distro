@@ -1,0 +1,75 @@
+#!/bin/sh
+# Copyright (C) 2022 Analog devices
+# Copyright (C) 2011 O.S. Systems Software LTDA.
+# Licensed on MIT
+
+selectrootfs_enabled() {
+	return 0
+}
+
+selectrootfs_run() {
+	
+	echo "mount:  ${bootparam_root} to ${ROOTFS_DIR},"
+
+        if [ -z "$ROOTFS_DIR" ]; then
+		return
+        fi
+	C=0
+	delay=${bootparam_rootdelay:-1}
+	timeout=${bootparam_roottimeout:-5}
+	while ! mountpoint -q $ROOTFS_DIR; do
+		if [ $(( $C * $delay )) -gt $timeout ]; then
+                        bootparam_init_fatal_sh="shell"
+                        fatal "root '$bootparam_root' doesn't exist or does not contain a /dev."
+		fi
+
+		if [ -n "$bootparam_root" ]; then
+			debug "No e2fs compatible filesystem has been mounted, mounting $bootparam_root..."
+
+			if [ -e "$bootparam_root" ]; then
+				flags=""
+				if [ -n "$bootparam_ro" ] && ! echo "$bootparam_rootflags" | grep -w -q "ro"; then
+					if [  -n "$bootparam_rootflags" ]; then
+						bootparam_rootflags="$bootparam_rootflags,"
+					fi
+					bootparam_rootflags="${bootparam_rootflags}ro"
+				fi
+				if [ -n "$bootparam_rootflags" ]; then
+					flags="$flags -o$bootparam_rootflags"
+				fi
+				if [ -n "$bootparam_rootfstype" ]; then
+					flags="$flags -t$bootparam_rootfstype"
+				fi
+				
+
+				partition_1="/dev/mmcblk0p2"
+				partition_2="/dev/mmcblk0p3"
+
+				#TODO: determine partition to use
+				if [ "$bootparam_root" = "$partition_1" ]; then 
+					echo "boot $bootparam_root"
+				elif [ "$bootparam_root" = "$partition_2" ];then
+					echo "boot $bootparam_root"		
+				else 
+					echo "$bootparam_root not found, boot to shell"
+					sh
+				fi
+
+				mount $flags $bootparam_root $ROOTFS_DIR
+				
+				if mountpoint -q $ROOTFS_DIR; then
+					break
+				else
+					# It is unlikely to change, but keep trying anyway.
+					# Perhaps we pick a different device next time.
+					umount $ROOTFS_DIR
+					echo "can not mount, goto shell."
+					sh
+				fi
+			fi
+		fi
+		debug "Sleeping for $delay second(s) to wait root to settle..."
+		sleep $delay
+		C=$(( $C + 1 ))
+	done
+}

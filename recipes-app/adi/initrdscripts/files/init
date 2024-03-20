@@ -1,0 +1,164 @@
+#!/bin/sh
+
+ROOT="/mnt/.root"
+METADATA="/mnt/.meta"
+MAPPER_NAME=rootfs
+
+echo "Starting /init on initramfs..."
+
+# mount temporary filesystems
+mount -n -t devtmpfs devtmpfs /dev
+mount -n -t proc     proc     /proc
+mount -n -t sysfs    sysfs    /sys
+mount -n -t tmpfs    tmpfs    /run
+
+# use the /dev/console device node from devtmpfs if possible to not
+# confuse glibc's ttyname_r().
+# This may fail (E.G. booted with console=), and errors from exec will
+# terminate the shell, so use a subshell for the test
+if (exec 0</dev/console) 2>/dev/null; then
+    exec 0</dev/console
+    exec 1>/dev/console
+    exec 2>/dev/console
+fi
+
+# Secondary boot stops at initramfs
+if [ -f /proc/device-tree/chosen/boot/secondary-tile ]
+then
+    # Setup tmpfs on /tmp
+    mkdir /var/volatile
+    mount -t tmpfs tmpfs /var/volatile
+    mkdir /var/volatile/tmp
+    chmod a+rwxt /var/volatile/tmp
+    ln -s /var/volatile/tmp /tmp
+
+    # Setup devpts (for ssh)
+    mkdir -p /dev/pts
+    mount -t devpts devpts /dev/pts
+
+    # Setup a home dir for root (for ssh)
+    mkdir -p /home/root
+
+    # Start jitterentropy service
+    /etc/init.d/jitterentropy start
+
+    # Start ssh server
+    /etc/init.d/dropbear start
+
+    # Let the primary know that boot is complete
+    stdbuf -o0 echo "Secondary tile is active. Halting boot."
+
+    # Stop using this tty as a console
+    dmesg -n1
+    exec 0</dev/null
+    exec 1>/dev/null
+    exec 2>/dev/null
+
+    PPP_TTY=/dev/ttyAMA0
+    # TODO: SystemC uses physical UART due to vUART latency issues
+    # Remove this if/when SystemC support is removed
+    PLAT=$(cat /proc/device-tree/chosen/boot/plat)
+    if [ "${PLAT}" = "sysc" ]
+    then
+        PPP_TTY=/dev/ttyAMA4
+    fi
+
+    # Bring up PPP on this tty
+    mkdir /var/run
+    pppd $PPP_TTY lock noipv6 4000000 local silent xonxoff noauth nodetach &
+
+    while true
+    do
+        sleep 1
+    done
+fi;
+
+# Get the active boot device and boot slot from the device tree 'chosen' node
+BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device)
+BOOT_SLOT=$(cat /proc/device-tree/chosen/boot/slot)
+echo "Active boot device: ${BOOT_DEV_ID}"
+echo "Active boot slot: ${BOOT_SLOT}"
+
+# Setup the boot device and rootfs device
+if [ "${BOOT_DEV_ID}" = "emmc0" ]; then
+    BOOT_DEV="/dev/mmcblk0"
+    ROOTFS_DEV=$BOOT_DEV
+elif [ "${BOOT_DEV_ID}" = "sd0" ]; then
+    BOOT_DEV="/dev/mmcblk1"
+    ROOTFS_DEV=$BOOT_DEV
+elif [ "${BOOT_DEV_ID}" = "qspi0" ]; then
+    BOOT_DEV="/dev/mtdblock"
+    ROOTFS_DEV="/dev/mmcblk0"
+else
+    echo "Invalid boot device ${BOOT_DEV_ID}"
+    exit 1
+fi;
+
+# Find the rootfs partition by name
+ROOTFS_PART_NAME=rootfs_${BOOT_SLOT}
+ROOTFS_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " ${ROOTFS_PART_NAME}" | tr -s " " " " | cut -d' ' -f2)
+ROOTFS_PART=${ROOTFS_DEV}p${ROOTFS_PART_NUM}
+
+# Find and source the rootfs configuration file
+if [ ! -f /etc/rootfs-cfg.env ]
+then
+	echo "/etc/rootfs-cfg.env is missing"
+	echo 1 > /sys/kernel/err/reset_cause
+	reboot -f now
+fi
+source /etc/rootfs-cfg.env
+
+# Setup dm-verity-related parameters
+HASH_OFFSET=$DATA_SIZE
+FEC_OFFSET=0
+[ "$FEC_ENABLED" -ne 0 ] && FEC_OFFSET=$((HASH_OFFSET+HASH_SIZE))
+
+# TODO: Enable this if/when dynamic creation/resizing of data partition is to be supported
+#DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " data$" | tr -s " " " " | cut -d' ' -f2)
+#if [ -z "$DATA_PART_NUM" ]
+#then
+#    echo "Creating 'data' partition on $ROOTFS_DEV..."
+#    sgdisk -e $ROOTFS_DEV
+#    DATA_PART_START=$(sgdisk -F $ROOTFS_DEV)
+#    DATA_PART_END=$(sgdisk -E $ROOTFS_DEV)
+#    sgdisk --new=0:$DATA_PART_START:$DATA_PART_END $ROOTFS_DEV
+#    DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep $DATA_PART_START | tr -s " " " " | cut -d' ' -f2)
+#    sgdisk --change-name=$DATA_PART_NUM:data $ROOTFS_DEV
+#    mkfs.ext4 $ROOTFS_DEVp$DATA_PART_NUM
+#fi
+
+VERITY_OPTS="--verbose --hash-offset=$HASH_OFFSET"
+[ "$FEC_ENABLED" -ne 0 ] && VERITY_OPTS="$VERITY_OPTS --fec-device=$ROOTFS_PART --fec-offset=$FEC_OFFSET --fec-roots=$FEC_ROOTS"
+if [ "$DM_VERITY_ENABLED" -eq 0 ]
+then
+    echo "WARN: ${ROOTFS_PART} authentication is disabled."
+    VERITY_OPTS="$VERITY_OPTS --ignore-corruption"
+else
+    echo "Setting up dm-verity for ${ROOTFS_PART}..."
+    VERITY_OPTS="$VERITY_OPTS --panic-on-corruption"
+    /usr/sbin/veritysetup open \
+        "${ROOTFS_PART}" $MAPPER_NAME "${ROOTFS_PART}" "$ROOT_HASH" $VERITY_OPTS
+    ROOTFS_PART=/dev/mapper/$MAPPER_NAME
+fi
+
+#echo "going to shell... "
+#/bin/sh
+
+echo "Mounting rootfs on ${ROOTFS_PART}..."
+[ -d ${ROOT} ] || mkdir -p ${ROOT}
+mount ${ROOTFS_PART} ${ROOT}
+
+# Mount the data partition
+DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " data$" | tr -s " " " " | cut -d' ' -f2)
+if [ -n "$DATA_PART_NUM" ]
+then
+    DATA_PART=${ROOTFS_DEV}p${DATA_PART_NUM}
+    echo "Mounting data partition on ${DATA_PART}..."
+    mount -o noexec,nosuid,nodev "${DATA_PART}" ${ROOT}/data/active
+else
+    echo "Unable to find data partition on ${ROOTFS_DEV}. Skipping mount."
+fi
+
+echo "Switching to rootfs..."
+cd ${ROOT} || exit 1
+exec switch_root . "/init" "$@"
