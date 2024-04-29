@@ -1,0 +1,13 @@
+# Copyright 2020 - 2024 Analog Devices Inc.
+# Released under MIT licence
+
+[Unit]
+Description=ADI auto-run services for setting default mac address.
+
+[Service]
+ExecStart=set-mac.sh
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+

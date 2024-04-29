@@ -4,15 +4,22 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 SRC_URI:append = " file://startup.sh"
 SRC_URI:append = " file://temp-mon.sh"
 SRC_URI:append:adrv904x-rd-ru = " file://poweroff.sh"
-SRC_URI:append = " file://environment"
+SRC_URI:append = " file://environment.in"
 SRC_URI:append:adrv904x-rd-ru = " file://adrv904x-rd-ru-heartbeat.sh"
+SRC_URI:append:adrv904x-rd-ru = " file://set_mac_address.sh"
 
 SRC_URI:append = " file://uiomem"
 SRC_URI:append = " file://led_apps/"
 
+DEPENDS:append = " gettext-native"
 RDEPENDS:${PN} = "bash"
 
 S = "${WORKDIR}/${BPN}-${PV}-${MACHINE}"
+
+do_compile() {
+    platform_name="${ADI_PLATFORM_NAME_VER}" \
+        envsubst < "${WORKDIR}/environment.in" > "${WORKDIR}/environment"
+}
 
 install_dirs() {
     install -d "${D}/opt"
@@ -36,28 +43,31 @@ do_install:prepend:adrv904x-rd-ru() {
     install -m 755 "${WORKDIR}/led_apps/scroll_client" "${D}/opt/led_apps/"
     install -m 755 "${WORKDIR}/led_apps/scroll_server" "${D}/opt/led_apps/"
     install -m 755 "${WORKDIR}/led_apps/toggle"        "${D}/opt/led_apps/"
+
+    #install setting script for default mac address
+    install -d "${D}/etc/netplan"
+    install -m 755 "${WORKDIR}/set_mac_address.sh"     "${D}/etc/netplan"
 }
 
 do_install() {
     install_dirs
 
     #install uiomem
-    install -m 755 "${WORKDIR}/uiomem"      "${D}/opt"
+    install -m 755 "${WORKDIR}/uiomem" "${D}/opt"
     ln -s -r ${D}/opt/uiomem ${D}${sbindir}/uiomem
 
     #install heartbeat
     if [ -f "${WORKDIR}/${MACHINE}-heartbeat.sh" ]; then
-        cp "${WORKDIR}/${MACHINE}-heartbeat.sh"        "${WORKDIR}/heartbeat.sh"
-        install -m 755 "${WORKDIR}/heartbeat.sh"       "${D}${sbindir}"
+        cp "${WORKDIR}/${MACHINE}-heartbeat.sh" "${WORKDIR}/heartbeat.sh"
+        install -m 755 "${WORKDIR}/heartbeat.sh" "${D}${sbindir}"
     fi
-    install -m 755 "${WORKDIR}/startup.sh"         "${D}${sbindir}"
+    install -m 755 "${WORKDIR}/startup.sh" "${D}${sbindir}"
 
     #install temp-mon
-    install -m 755 "${WORKDIR}/temp-mon.sh"       "${D}${sbindir}"
+    install -m 755 "${WORKDIR}/temp-mon.sh" "${D}${sbindir}"
 
     #install /etc/environment file
-    sed -i 's/${platform_name}/${PLATFORM_NAME_VER}/g'    ${WORKDIR}/environment
-    install -m 755 "${WORKDIR}/environment"       "${D}/etc"
+    install -m 755 "${WORKDIR}/environment" "${D}/etc"
 }
 
 do_install:append(){
@@ -70,4 +80,5 @@ do_install:append(){
 
 #shipped the installed files to /opt in the rootfs:
 FILES:${PN}:append = " ${sbindir}/* /etc/environment /opt/*"
+FILES:${PN}:append:adrv904x-rd-ru = " /etc/netplan/set_mac_address.sh"
 INSANE_SKIP:${PN} = "ldflags"

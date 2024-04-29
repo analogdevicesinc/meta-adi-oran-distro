@@ -29,8 +29,11 @@ do_install_sysvinit_services() {
     update-rc.d -r ${D} startup.sh start 100 2 3 4 5 .
 }
 
-do_install_sysvinit_services:adrv904x-rd-ru:append() {
+do_install_sysvinit_services:append:adrv904x-rd-ru() {
     make_dirs
     install -m 0755 ${D}${sbindir}/poweroff.sh  ${D}${sysconfdir}/init.d
     update-rc.d -r ${D} poweroff.sh start 100 6 .
+
+    install -m 0755 ${D}${sysconfdir}/netplan/set_mac_address.sh  ${D}${sysconfdir}/init.d
+    update-rc.d -r ${D} set_mac_address.sh start 100 3 5 .
 }

@@ -11,7 +11,8 @@ EXTRA_USERS_PARAMS = " \
     "
 
 enable_sudoers() {
-    echo "${USER_ADI} ALL=(ALL:ALL) ALL" > ${IMAGE_ROOTFS}/${sysconfdir}/sudoers.d/${USER_ADI}
+    mkdir -p ${IMAGE_ROOTFS}${sysconfdir}/sudoers.d
+    echo "${USER_ADI} ALL=(ALL:ALL) ALL" > ${IMAGE_ROOTFS}${sysconfdir}/sudoers.d/${USER_ADI}
 }
 
 #install user's ssh pub key on the server

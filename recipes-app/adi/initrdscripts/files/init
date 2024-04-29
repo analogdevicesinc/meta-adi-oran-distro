@@ -127,14 +127,13 @@ FEC_OFFSET=0
 #    mkfs.ext4 $ROOTFS_DEVp$DATA_PART_NUM
 #fi
 
-VERITY_OPTS="--verbose --hash-offset=$HASH_OFFSET"
-[ "$FEC_ENABLED" -ne 0 ] && VERITY_OPTS="$VERITY_OPTS --fec-device=$ROOTFS_PART --fec-offset=$FEC_OFFSET --fec-roots=$FEC_ROOTS"
 if [ "$DM_VERITY_ENABLED" -eq 0 ]
 then
-    echo "WARN: ${ROOTFS_PART} authentication is disabled."
-    VERITY_OPTS="$VERITY_OPTS --ignore-corruption"
+    echo "WARN: SECURE BOOT IS DISABLED. dm-verity is OFF for ${ROOTFS_PART}."
 else
     echo "Setting up dm-verity for ${ROOTFS_PART}..."
+    VERITY_OPTS="--verbose --hash-offset=$HASH_OFFSET"
+    [ "$FEC_ENABLED" -ne 0 ] && VERITY_OPTS="$VERITY_OPTS --fec-device=$ROOTFS_PART --fec-offset=$FEC_OFFSET --fec-roots=$FEC_ROOTS"
     VERITY_OPTS="$VERITY_OPTS --panic-on-corruption"
     /usr/sbin/veritysetup open \
         "${ROOTFS_PART}" $MAPPER_NAME "${ROOTFS_PART}" "$ROOT_HASH" $VERITY_OPTS

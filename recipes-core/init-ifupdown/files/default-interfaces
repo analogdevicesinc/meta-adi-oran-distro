@@ -17,6 +17,6 @@ address 172.17.0.42
 netmask 255.255.0.0
 
 # 1G eth port configuration
-auto eth2 
+auto eth2
 iface eth2 inet dhcp
-    post-up /usr/sbin/eth2-fallback.sh
+    post-up /usr/sbin/eth-fallback.sh eth2 192.168.1.30/24

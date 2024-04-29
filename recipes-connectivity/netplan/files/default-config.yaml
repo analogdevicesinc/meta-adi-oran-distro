@@ -16,4 +16,4 @@ network:
     eth2:
       dhcp4: true
       optional: true
-      addresses-fallback: [192.168.1.33/24]
+      addresses-fallback: [192.168.1.30/24]

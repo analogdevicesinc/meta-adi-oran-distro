@@ -31,18 +31,11 @@ EXTRA_USERS_PARAMS = "\
     usermod -a -G disk,bootcfg,shutdown swupdate; \
     "
 
-# TODO: Enable the following for the debug/developer image only
-IMAGE_INSTALL:append = " \
-    sudo \
-    libcap \
-    libcap-bin \
-    "
-EXTRA_USERS_PARAMS:append = " \
-    usermod -a -G sudo adi; \
-    "
+# Enable sudo for the adi user. Developer image only.
 enable_sudo_group() {
     # Sets the following line in the sudeors file:
     # %sudo   ALL=(ALL:ALL) ALL
     sed -i 's/^#\s*\(%sudo\s*ALL=(ALL:ALL)\s*ALL\)/\1/'  ${IMAGE_ROOTFS}/etc/sudoers
 }
-ROOTFS_POSTPROCESS_COMMAND += "enable_sudo_group;"
+EXTRA_USERS_PARAMS:append = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '0', ' usermod -a -G sudo adi;', ' ', d)}"
+ROOTFS_POSTPROCESS_COMMAND:append = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '0', ' enable_sudo_group;', ' ', d)}"

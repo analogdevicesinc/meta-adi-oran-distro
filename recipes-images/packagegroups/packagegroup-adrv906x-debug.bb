@@ -17,7 +17,9 @@ RDEPENDS:${PN} = " \
     iftop \
     sysstat \
     i2c-tools \
-    libiio \
     linuxptp \
     tcpdump \
+    libcap \
+    libcap-bin \
+    sudo \
 	"

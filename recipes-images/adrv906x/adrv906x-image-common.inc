@@ -20,8 +20,7 @@ inherit extrausers
 # Enable access controls for ADRV906X reference design
 require access-controls.inc
 
-EXTRA_IMAGE_FEATURES:append = " data-partition"
-EXTRA_IMAGE_FEATURES:append = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '1', ' read-only-rootfs', ' ', d)}"
+EXTRA_IMAGE_FEATURES:append = " read-only-rootfs data-partition"
 IMAGE_INSTALL:append = " packagegroup-adrv906x-essential"
 IMAGE_INSTALL:append = " \
     gptfdisk \
@@ -39,6 +38,9 @@ IMAGE_INSTALL:append = " \
     perf \
     procps \
     ethtool \
+    blink-all-leds \
+    linux-ready-led \
+    rootfs-anti-rollback \
     "
 
 #TODO - add more packages, features to debug image when we support 4G  SD card and emmc
@@ -49,6 +51,7 @@ PACKAGE_GROUPS_ADRV906X_DEBUG = " \
     tcpreplay \
     "
 IMAGE_INSTALL:append = "${@d.getVar('PACKAGE_GROUPS_ADRV906X_DEBUG') if  d.getVar('ADI_CC_DM_VERITY_ENABLED')=='0' else ''}"
+EXTRA_IMAGE_FEATURES:remove = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '1', 'debug-tweaks', '', d)}"
 
 IMAGE_DATA_PART_FILES = ""
 IMAGE_DATA_PART_FILES_WITH_DFLTS = " \

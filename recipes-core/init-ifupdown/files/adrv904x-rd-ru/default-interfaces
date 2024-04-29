@@ -1,0 +1,14 @@
+# /etc/network/interfaces -- configuration file for ifup(8), ifdown(8)
+
+# The loopback interface
+auto lo
+iface lo inet loopback
+
+# 1G eth port configuration
+auto eth0
+iface eth0 inet dhcp
+    post-up /usr/sbin/eth-fallback.sh eth0 192.168.1.30/24
+
+# 10/25G QSFP_0, QSFP_1 configuration
+auto eth1
+auto eth2

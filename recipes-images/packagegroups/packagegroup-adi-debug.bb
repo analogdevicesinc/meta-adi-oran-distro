@@ -29,4 +29,6 @@ RDEPENDS:${PN} = " \
 	g++ \
 	procps \
 	spidev-test \
+	ldd \
+	valgrind \
 	"
