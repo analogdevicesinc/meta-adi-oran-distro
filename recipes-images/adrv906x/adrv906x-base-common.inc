@@ -1,9 +1,7 @@
-COMPATIBLE_MACHINE ?= "titan-*"
-
 require adrv906x-image-common.inc
 
 adrv906x_mkext4fs () {
-    mkfs.ext4 ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.ext4 -d ${IMAGE_ROOTFS} -b 4096 240M
+    mkfs.ext4 ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.ext4 -d ${IMAGE_ROOTFS} -b 4096 844M 
 }
 
 IMAGE_CMD:ext4 = "adrv906x_mkext4fs"

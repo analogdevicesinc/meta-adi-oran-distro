@@ -1,0 +1,29 @@
+From ff98d0ede43075617a0e8f87e393dbc7fb0ec7be Mon Sep 17 00:00:00 2001
+From: Brian Neely <brian.neely@analog.com>
+Date: Wed, 20 Dec 2023 08:42:32 -0500
+Subject: [PATCH] Update util-linux to use /data/active partition for
+ /etc/passwd, /etc/group, /etc/shadow, and /etc/gshadow
+
+---
+ include/pathnames.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/include/pathnames.h b/include/pathnames.h
+index 9be2baa..bd08a08 100644
+--- a/include/pathnames.h
++++ b/include/pathnames.h
+@@ -57,10 +57,10 @@
+ #define _PATH_TERMCOLORS_DIR	"/etc/" _PATH_TERMCOLORS_DIRNAME
+ 
+ /* login paths */
+-#define _PATH_PASSWD		"/etc/passwd"
+-#define _PATH_GSHADOW		"/etc/gshadow"
+-#define _PATH_GROUP		"/etc/group"
+-#define _PATH_SHADOW_PASSWD	"/etc/shadow"
++#define _PATH_PASSWD		"/data/active/etc/passwd"
++#define _PATH_GSHADOW		"/data/active/etc/gshadow"
++#define _PATH_GROUP		"/data/active/etc/group"
++#define _PATH_SHADOW_PASSWD	"/data/active/etc/shadow"
+ #define _PATH_SHELLS		"/etc/shells"
+ 
+ #ifndef _PATH_TMP

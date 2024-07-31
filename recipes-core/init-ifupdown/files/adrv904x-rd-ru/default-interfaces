@@ -9,6 +9,7 @@ auto eth0
 iface eth0 inet dhcp
     post-up /usr/sbin/eth-fallback.sh eth0 192.168.1.30/24
 
-# 10/25G QSFP_0, QSFP_1 configuration
+# MSP port configuration
 auto eth1
-auto eth2
+iface eth1 inet dhcp
+    post-up /usr/sbin/eth-fallback.sh eth1 192.168.2.31/24

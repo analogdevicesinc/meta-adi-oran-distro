@@ -7,7 +7,8 @@ network:
       dhcp4: true
       optional: true
       addresses-fallback: [192.168.1.30/24]
-    # 10/25G QSFP_0
+    # ETH_1 (MSP)
     eth1:
-    # 10/25G QSFP_1
-    eth2:
+      dhcp4: true
+      optional: true
+      addresses-fallback: [192.168.2.31/24]

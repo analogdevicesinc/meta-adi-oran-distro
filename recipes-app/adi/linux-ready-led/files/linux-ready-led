@@ -12,13 +12,11 @@ export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 case "$1" in
   start)
         echo -n "Turn on LED0"
-# enable setting gpio after testing on real HW
-#        gpioset gpiochip0 74=1
+        gpioset gpiochip0 74=1
         ;;
   stop)
         echo -n "Turn off LED0"
-# enable setting gpio after testing on real HW
-#        gpioset gpiochip0 74=0
+        gpioset gpiochip0 74=0
         ;;
   *)
         echo "Usage: /etc/init.d/linux-ready-led {start|stop}"

@@ -2,9 +2,7 @@ inherit dm-verity-img
 
 CONVERSION_DEPENDS:verity:append = " e2fsprogs-native"
 
-ADI_CC_DM_VERITY_ENABLED ?= "1"
-ADI_CC_DM_VERITY_FEC_ENABLED ?= "1"
-
+DM_VERITY_ENABLED ?= "${@bb.utils.contains('ADI_CC_BOOT_DEBUG', '1', '0', '1', d)}"
 DM_VERITY_IMAGE_DATA_BLOCK_SIZE ?= "4096"
 DM_VERITY_IMAGE_HASH_BLOCK_SIZE ?= "4096"
 DM_VERITY_IMAGE_FEC_ROOTS ?= "2"
@@ -27,8 +25,8 @@ verity_setup() {
     local INPUT=${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$TYPE
     local SIZE=$(stat --printf="%s" $INPUT)
     local OUTPUT=$INPUT.verity
-    local ENABLED=${ADI_CC_DM_VERITY_ENABLED}
-    local FEC_ENABLED=${ADI_CC_DM_VERITY_FEC_ENABLED}
+    local ENABLED=${DM_VERITY_ENABLED}
+    local FEC_ENABLED="1"
     local HASH_SIZE
     local FEC_SIZE
     local VERITY_OPTS

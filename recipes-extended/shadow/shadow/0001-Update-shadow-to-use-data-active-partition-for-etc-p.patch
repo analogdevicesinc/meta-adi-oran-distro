@@ -1,0 +1,73 @@
+From 6d277eb553f33cf5d43c98f8ec7a34a5cdb4c767 Mon Sep 17 00:00:00 2001
+From: Brian Neely <brian.neely@analog.com>
+Date: Wed, 20 Dec 2023 08:47:53 -0500
+Subject: [PATCH] Update shadow to use /data/active partition for /etc/passwd,
+ /etc/group, /etc/shadow, and /etc/gshadow
+
+---
+ lib/defines.h       | 16 ++++------------
+ lib/subordinateio.c |  6 +++---
+ 2 files changed, 7 insertions(+), 15 deletions(-)
+
+diff --git a/lib/defines.h b/lib/defines.h
+index fc1521c..92e64a2 100644
+--- a/lib/defines.h
++++ b/lib/defines.h
+@@ -300,22 +300,14 @@ char *strchr (), *strrchr (), *strtok ();
+ #define STRFCPY(A,B) \
+ 	(strncpy((A), (B), sizeof(A) - 1), (A)[sizeof(A) - 1] = '\0')
+ 
+-#ifndef PASSWD_FILE
+-#define PASSWD_FILE "/etc/passwd"
+-#endif
++#define PASSWD_FILE "/data/active/etc/passwd"
+ 
+-#ifndef GROUP_FILE
+-#define GROUP_FILE "/etc/group"
+-#endif
++#define GROUP_FILE "/data/active/etc/group"
+ 
+-#ifndef SHADOW_FILE
+-#define SHADOW_FILE "/etc/shadow"
+-#endif
++#define SHADOW_FILE "/data/active/etc/shadow"
+ 
+ #ifdef SHADOWGRP
+-#ifndef SGROUP_FILE
+-#define SGROUP_FILE "/etc/gshadow"
+-#endif
++#define SGROUP_FILE "/data/active/etc/gshadow"
+ #endif
+ 
+ #ifndef NULL
+diff --git a/lib/subordinateio.c b/lib/subordinateio.c
+index 9ca70b8..9070581 100644
+--- a/lib/subordinateio.c
++++ b/lib/subordinateio.c
+@@ -206,7 +206,7 @@ static const struct subordinate_range *find_range(struct commonio_db *db,
+         /*
+          * We only do special handling for these two files
+          */
+-        if ((0 != strcmp(db->filename, "/etc/subuid")) && (0 != strcmp(db->filename, "/etc/subgid")))
++        if ((0 != strcmp(db->filename, "/data/active/etc/subuid")) && (0 != strcmp(db->filename, "/data/active/etc/subgid")))
+                 return NULL;
+ 
+         /*
+@@ -554,7 +554,7 @@ static int remove_range (struct commonio_db *db,
+ }
+ 
+ static struct commonio_db subordinate_uid_db = {
+-	"/etc/subuid",		/* filename */
++	"/data/active/etc/subuid",		/* filename */
+ 	&subordinate_ops,	/* ops */
+ 	NULL,			/* fp */
+ #ifdef WITH_SELINUX
+@@ -650,7 +650,7 @@ uid_t sub_uid_find_free_range(uid_t min, uid_t max, unsigned long count)
+ }
+ 
+ static struct commonio_db subordinate_gid_db = {
+-	"/etc/subgid",		/* filename */
++	"/data/active/etc/subgid",		/* filename */
+ 	&subordinate_ops,	/* ops */
+ 	NULL,			/* fp */
+ #ifdef WITH_SELINUX

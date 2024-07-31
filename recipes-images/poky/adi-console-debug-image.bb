@@ -2,8 +2,10 @@ SUMMARY = "Boot Debugging Image for ADI O-RAN platforms, suitable for debug use.
 LICENSE = "MIT"
 
 require recipes-images/poky/adi-console-image.bb
+export IMAGE_BASENAME = "adi-console-debug-image"
 
-COMPATIBLE_MACHINE:append ?= "titan-*|"
+# Remove Firewall
+IMAGE_INSTALL:remove = "nftables"
 
 PACKAGE_GROUPS_FPGA_DEBUG = " \
     packagegroup-adi-debug \
@@ -35,9 +37,7 @@ create_jtag_image_alias() {
         ${DEPLOY_DIR_IMAGE}/adi-console-debug-jtag-image-${MACHINE}.wic.gz
 }
 
-do_image_complete:append:titan-4() {
-    bb.build.exec_func('create_jtag_image_alias', d)
-}
-do_image_complete:append:titan-8() {
-    bb.build.exec_func('create_jtag_image_alias', d)
+do_image_complete:append() {
+    if d.getVar('ADI_SOC') == 'adrv906x':
+        bb.build.exec_func('create_jtag_image_alias', d)
 }

@@ -16,3 +16,12 @@ do_install() {
 
 RDEPENDS:${PN} = "udev"
 
+SRC_URI:append:denali = "file://access-policy-denali.rules"
+do_install:append:denali() {
+    install -m 0644 ${WORKDIR}/access-policy-denali.rules ${D}${sysconfdir}/udev/rules.d/
+}
+
+SRC_URI:append:titan = "file://access-policy-titan.rules"
+do_install:append:titan() {
+    install -m 0644 ${WORKDIR}/access-policy-titan.rules ${D}${sysconfdir}/udev/rules.d/
+}

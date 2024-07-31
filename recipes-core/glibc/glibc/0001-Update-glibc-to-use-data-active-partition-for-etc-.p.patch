@@ -1,0 +1,22 @@
+From d7b38a1616d9679883f701b02986e449ac785bc7 Mon Sep 17 00:00:00 2001
+From: Brian Neely <brian.neely@analog.com>
+Date: Wed, 20 Dec 2023 08:36:58 -0500
+Subject: [PATCH] Update glibc to use /data/active partition for /etc/.pwd.lock
+
+---
+ shadow/lckpwdf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/shadow/lckpwdf.c b/shadow/lckpwdf.c
+index 2df8f4ef7a..289d316250 100644
+--- a/shadow/lckpwdf.c
++++ b/shadow/lckpwdf.c
+@@ -29,7 +29,7 @@
+ 
+ 
+ /* Name of the lock file.  */
+-#define PWD_LOCKFILE "/etc/.pwd.lock"
++#define PWD_LOCKFILE "/data/active/etc/.pwd.lock"
+ 
+ /* How long to wait for getting the lock before returning with an
+    error.  */

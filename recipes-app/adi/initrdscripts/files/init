@@ -153,9 +153,39 @@ if [ -n "$DATA_PART_NUM" ]
 then
     DATA_PART=${ROOTFS_DEV}p${DATA_PART_NUM}
     echo "Mounting data partition on ${DATA_PART}..."
-    mount -o noexec,nosuid,nodev "${DATA_PART}" ${ROOT}/data/active
+    mount -o noexec,nosuid,nodev "${DATA_PART}" "${ROOT}/data/active"
 else
     echo "Unable to find data partition on ${ROOTFS_DEV}. Skipping mount."
+fi
+
+if [ -f "${ROOT}/etc/anti-rollback-version" ]
+then
+    # Read anti-rollback counter stored in rootfs
+    anti_rollback_counter=$(cat "${ROOT}/etc/anti-rollback-version")
+
+    # Verify enforcement-counter node exists in kernel device tree
+    if [ ! -f "/proc/device-tree/chosen/boot/anti-rollback/enforcement-counter" ]
+    then
+        echo "Unable to find enforcement-counter node in kernel device tree"
+        echo 1 > "/sys/kernel/err/reset_cause"
+        reboot -f now
+    fi
+
+    # Read enforcement counter stored in device tree by U-Boot
+    enforcement_counter=$(cat "/proc/device-tree/chosen/boot/anti-rollback/enforcement-counter")
+
+    # If anti-rollback counter is less than enforcement counter, set reset cause and trigger warm reset
+    if [ "$anti_rollback_counter" -lt "$enforcement_counter" ]
+    then
+        echo "Rootfs failed anti-rollback enforcement check"
+        echo 1 > "/sys/kernel/err/reset_cause"
+        reboot -f now
+    fi
+else
+    # Reset if anti-rollback counter is not found in rootfs
+    echo "Unable to find anti-rollback counter in rootfs"
+    echo 1 > "/sys/kernel/err/reset_cause"
+    reboot -f now
 fi
 
 echo "Switching to rootfs..."

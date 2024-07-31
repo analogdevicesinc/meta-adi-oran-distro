@@ -1,8 +1,6 @@
 SUMMARY = "ADRV906x base sd image w/o jtag enabled"
 LICENSE = "MIT"
 
-COMPATIBLE_MACHINE:append ?= "titan-*|"
-
 # create `adrv906x-base-image` will also create `adrv906x-base-jtag-image`
 DEPENDS:append = " adrv906x-base-jtag-image"
 

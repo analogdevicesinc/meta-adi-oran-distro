@@ -1,0 +1,5 @@
+# Allow accessing any AT24 eeprom
+# SUBSYSTEM=="i2c", DRIVER=="at24", RUN+="/bin/chown :eeprom /sys$devpath/eeprom", RUN+="/bin/chmod 660 /sys$devpath/eeprom"
+
+# Add i2c 1-0057 EEPROM to the eeprom group
+DEVPATH=="/devices/platform/20760100.twi/i2c-1/1-0057", RUN+="/bin/chown :eeprom /sys$devpath/eeprom", RUN+="/bin/chmod 660 /sys$devpath/eeprom"

@@ -25,3 +25,7 @@ FILES:${PN} = " \
         /data/defaults \
         /data/active \
     "
+
+RDEPENDS:${PN} = " \
+	e2fsprogs-mke2fs \
+	"

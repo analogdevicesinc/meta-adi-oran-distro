@@ -29,14 +29,4 @@ install_ssh_key() {
     fi
 }
 
-set_user_env(){
-    echo "PATH=""$""PATH:/usr/local/sbin:/usr/sbin:/sbin" >> ${IMAGE_ROOTFS}/${USER_HOME}/.profile
-}
-
-#TODO
-#meta/classes/extrausers.bbclass
-#uses :append to add set_user_group function"
-#which does not work. add it here
-#it can be removed after kirkstone fixes its bug or with an upgraded yocto version
-
-ROOTFS_POSTPROCESS_COMMAND:append = " set_user_group; enable_sudoers; install_ssh_key; set_user_env;"
+ROOTFS_POSTPROCESS_COMMAND:append = " enable_sudoers; install_ssh_key;"

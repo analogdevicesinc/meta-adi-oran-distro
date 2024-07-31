@@ -31,4 +31,14 @@ RDEPENDS:${PN} = " \
 	spidev-test \
 	ldd \
 	valgrind \
+	netsniff-ng \
+	perf \
+	iperf2 \
+	iperf3 \
+	i2c-tools \
+	dos2unix \
+	kmod \
+	perl \
 	"
+
+RDEPENDS:${PN}:append:adrv904x-rd-ru = " fifo-reset-fix"

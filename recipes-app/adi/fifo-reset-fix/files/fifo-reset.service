@@ -1,0 +1,12 @@
+# Copyright 2024 Analog Devices Inc.
+# Released under MIT licence
+
+[Unit]
+Description=Fix that runs on startup to clear the FIFO.
+
+[Service]
+ExecStart=/sbin/fifo-reset
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

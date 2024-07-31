@@ -21,11 +21,17 @@ EXTRA_USERS_PARAMS = "\
     groupadd gpio; \
     groupadd tee; \
     groupadd network; \
+    groupadd spidev; \
+    groupadd i2c; \
+    groupadd eeprom; \
     usermod -L -e 1 -s /sbin/nologin root; \
     useradd -p '${ADI_USER_PASSWD}' adi; \
     useradd -M adrv906x_server; \
     usermod -L -e 1 -s /sbin/nologin adrv906x_server; \
-    usermod -a -G adi-oru-uio,bootcfg,sram_mmap,gpio,tee,dialout adrv906x_server; \
+    usermod -a -G adi-oru-uio,bootcfg,sram_mmap,gpio,tee,dialout,shutdown adrv906x_server; \
+    useradd -M adrv906x_ras; \
+    usermod -L -e 1 -s /sbin/nologin adrv906x_ras; \
+    usermod -a -G spidev,i2c,eeprom,dialout,gpio,shutdown adrv906x_ras; \
     useradd -M swupdate; \
     usermod -L -e 1 -s /sbin/nologin swupdate; \
     usermod -a -G disk,bootcfg,shutdown swupdate; \
@@ -37,5 +43,5 @@ enable_sudo_group() {
     # %sudo   ALL=(ALL:ALL) ALL
     sed -i 's/^#\s*\(%sudo\s*ALL=(ALL:ALL)\s*ALL\)/\1/'  ${IMAGE_ROOTFS}/etc/sudoers
 }
-EXTRA_USERS_PARAMS:append = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '0', ' usermod -a -G sudo adi;', ' ', d)}"
-ROOTFS_POSTPROCESS_COMMAND:append = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '0', ' enable_sudo_group;', ' ', d)}"
+EXTRA_USERS_PARAMS:append = "${@bb.utils.contains('ADI_CC_BOOT_DEBUG', '1', ' usermod -a -G sudo adi;', ' ', d)}"
+ROOTFS_POSTPROCESS_COMMAND:append = "${@bb.utils.contains('ADI_CC_BOOT_DEBUG', '1', ' enable_sudo_group;', ' ', d)}"

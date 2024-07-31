@@ -20,13 +20,10 @@ do_install_sysvinit_services() {
     install -m 0755 "${WORKDIR}/start_heart.sh"       "${D}${sbindir}"
     install -m 0755 ${D}${sbindir}/start_heart.sh  ${D}${sysconfdir}/init.d
     install -m 0755 ${D}${sbindir}/temp-mon.sh  ${D}${sysconfdir}/init.d
-    sed -i "s/netplan\/\*config.yaml/network\/interfaces/g" ${D}${sbindir}/startup.sh
-    install -m 0755 ${D}${sbindir}/startup.sh  ${D}${sysconfdir}/init.d
 
     # Create runlevel links
     update-rc.d -r ${D} start_heart.sh start 100 2 3 4 5 .
     update-rc.d -r ${D} temp-mon.sh start 100 2 3 4 5 .
-    update-rc.d -r ${D} startup.sh start 100 2 3 4 5 .
 }
 
 do_install_sysvinit_services:append:adrv904x-rd-ru() {
@@ -34,6 +31,10 @@ do_install_sysvinit_services:append:adrv904x-rd-ru() {
     install -m 0755 ${D}${sbindir}/poweroff.sh  ${D}${sysconfdir}/init.d
     update-rc.d -r ${D} poweroff.sh start 100 6 .
 
-    install -m 0755 ${D}${sysconfdir}/netplan/set_mac_address.sh  ${D}${sysconfdir}/init.d
+    ln -sf /etc/netplan/set_mac_address.sh   ${D}${sysconfdir}/init.d/set_mac_address.sh
+    ln -sf ${sbindir}/recal_corepll.sh       ${D}${sysconfdir}/init.d/recal_corepll.sh
+    ln -sf ${sbindir}/startup.sh             ${D}${sysconfdir}/init.d/startup.sh
+
+    update-rc.d -r ${D} startup.sh start 100 2 3 4 5 .
     update-rc.d -r ${D} set_mac_address.sh start 100 3 5 .
 }

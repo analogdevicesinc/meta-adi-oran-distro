@@ -8,7 +8,8 @@
 
 temp_mon()
 {
-FAN_CTRL_REG="0xF9140150"
+# register base is 0xF900 0000, but offset is used
+FAN_CTRL_REG="0x140150"
 CHIP_ID="0x4D"
 CHIP_ADDR="0x4D"
 
@@ -19,24 +20,11 @@ if [[ $result != *"i2cget"* ]] ; then
     exit 1
 fi
 
-w_flag=""
 result=$(which uiomem)
 if [[ $result != *"uiomem"* ]] ; then
     echo -e "\nuiomem is not found, trying to find devmem2\n"
-    result=$(which devmem2)
-    if [[ $result != *"devmem2"* ]] ; then
-        echo -e "\ndevmem2 is not found, exited!\n"
-        exit 1
-    else
-        rwtool=devmem2
-        w_flag=w
-    fi
-else
-    rwtool=uiomem
+    exit 1
 fi
-
-echo -e "\nrwtool = ${rwtool}\n"  &> /dev/null
-echo -e "\nw_flag = ${w_flag}\n"  &> /dev/null
 
 #Sleep is 10s.
 delay=10s
@@ -94,7 +82,7 @@ do
     echo -e "\nalert = ${alert}!\n"  &> /dev/null
     if [[ $alert -gt 0 ]]; then
         wall "Hot alert! Fan speed is set to HIGH until alert released!"
-        $rwtool ${FAN_CTRL_REG} ${w_flag} 0x1E >> /dev/null
+        uiomem 0 0 ${FAN_CTRL_REG} 0x1E >> /dev/null
     else
         temp=$(i2cget -y "${TEMP_BUS}" "${CHIP_ADDR}" "${TEMP_CH}")
         echo -e "\nCurrent temperature is ${temp}\n"  &> /dev/null
@@ -108,7 +96,7 @@ do
         if [[ $speed != ${speed_prev} ]]; then
             echo -e "\nChanging fan speed from ${speed_prev} to ${speed},\
             max = 0x1F.\n"  &> /dev/null
-            $rwtool ${FAN_CTRL_REG} ${w_flag} ${speed} >> /dev/null
+            uiomem 0 0 ${FAN_CTRL_REG} ${speed} >> /dev/null
         fi
 
         speed_prev=$speed

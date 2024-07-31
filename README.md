@@ -46,3 +46,25 @@ has a fallback address should DHCP fails. The fallback address is
 configurable by adding the following to your local configuration file:
 
     ADI_CC_FALLBACK_ADDRESS = “xxx.xxx.xxx.xxx/xx”
+
+### Notes for adrv904x-rd-ru
+
+The adrv904x-rd-ru platform has multiple interfaces:
+
+* eth0 - management port, dhcp-enabled, falls back to 192.168.1.30/24
+* eth1 - MSP access for PTP PHC, dhcp-enabled, falls back to 192.168.2.31/24
+* etile0/etile1 - 10G / 25G SFP interfaces O-RAN C/U plane data, configured by driver
+
+## Modifiable user/group database
+
+User/group database (/etc/passwd, /etc/group, etc.) can be moved to the writable
+data partition (/data/active) using the following variable. This is useful when
+the read-only-rootfs feature is enabled but add/remove/modify user/group
+functionality is required.
+
+NOTE: Moving these files to writable storage removes them from the secure boot
+chain-of-trust and makes them potentially vulnerable to offline attacks.
+ADI does not recommend using this feature.
+
+    ADI_CC_USER_DB_ON_DATA_PART = "1"
+

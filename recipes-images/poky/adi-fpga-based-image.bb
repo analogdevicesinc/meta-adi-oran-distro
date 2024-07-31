@@ -1,6 +1,7 @@
 require recipes-core/images/core-image-base.bb
 require ./users.inc
 
+COMPATIBLE_MACHINE = "adrv904x-rd-ru"
 
 DEPENDS:append = " \
     bash \
@@ -22,7 +23,7 @@ export IMAGE_BASENAME = "adi-console-image"
 set_rootfs_env() {
     # TODO: Check if we can move this to source recipe
     # Source environment from "adi-files" recipe.
-    echo "\nsource /etc/environment" >> ${IMAGE_ROOTFS}/etc/profile
+    echo -e "\nsource /etc/environment" >> ${IMAGE_ROOTFS}/etc/profile
 }
 
 enable_autologin() {

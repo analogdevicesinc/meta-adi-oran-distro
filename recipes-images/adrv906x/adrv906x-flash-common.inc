@@ -1,5 +1,3 @@
-COMPATIBLE_MACHINE ?= "titan-*"
-
 require adrv906x-image-common.inc
 
 IMAGE_FSTYPES:append = " jffs2"

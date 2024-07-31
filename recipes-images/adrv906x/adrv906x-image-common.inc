@@ -9,7 +9,7 @@ IMAGE_INSTALL:append = " \
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 
 # needs to be in sync with the size in adrv906x_mkext4fs()
-IMAGE_ROOTFS_SIZE = "245760"
+IMAGE_ROOTFS_SIZE = "864256"
 
 IMAGE_LINGUAS = " "
 
@@ -35,25 +35,34 @@ IMAGE_INSTALL:append = " \
     mtd-utils \
     logrotate \
     daemontools \
-    perf \
     procps \
     ethtool \
-    blink-all-leds \
     linux-ready-led \
     rootfs-anti-rollback \
+    nftables \
+    linuxptp \
+    openssh-sftp-server \
+    tzdata \
     "
+
+IMAGE_INSTALL:append:titan = " pushbutton-mon"
+IMAGE_INSTALL:append:denali = " pushbutton-mon"
 
 #TODO - add more packages, features to debug image when we support 4G  SD card and emmc
 #NOW  - rootfs is limited to 256MB(support for larger in adi-console-debug image)
 #wishlist: dbg-pkgs, packagegroup-core-tools-profile  packagegroup-core-buildessential"
 PACKAGE_GROUPS_ADRV906X_DEBUG = " \
     packagegroup-adrv906x-debug \
-    tcpreplay \
+    packagegroup-core-buildessential \
+    packagegroup-core-tools-debug \
+    packagegroup-core-tools-profile \
     "
-IMAGE_INSTALL:append = "${@d.getVar('PACKAGE_GROUPS_ADRV906X_DEBUG') if  d.getVar('ADI_CC_DM_VERITY_ENABLED')=='0' else ''}"
-EXTRA_IMAGE_FEATURES:remove = "${@bb.utils.contains('ADI_CC_DM_VERITY_ENABLED', '1', 'debug-tweaks', '', d)}"
+IMAGE_INSTALL:append = "${@d.getVar('PACKAGE_GROUPS_ADRV906X_DEBUG') if  d.getVar('ADI_CC_BOOT_DEBUG')=='1' else ''}"
+EXTRA_IMAGE_FEATURES:remove = "${@bb.utils.contains('ADI_CC_BOOT_DEBUG', '0', 'debug-tweaks', '', d)}"
 
-IMAGE_DATA_PART_FILES = ""
+IMAGE_DATA_PART_FILES = " \
+    /etc/adjtime \
+    "
 IMAGE_DATA_PART_FILES_WITH_DFLTS = " \
     /etc/dropbear/keys \
     /etc/network/interfaces \

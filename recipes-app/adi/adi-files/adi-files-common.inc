@@ -2,6 +2,7 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
 SRC_URI:append = " file://startup.sh"
+SRC_URI:append = " file://recal_corepll.sh"
 SRC_URI:append = " file://temp-mon.sh"
 SRC_URI:append:adrv904x-rd-ru = " file://poweroff.sh"
 SRC_URI:append = " file://environment.in"
@@ -30,16 +31,12 @@ install_dirs() {
 do_install:prepend:adrv904x-rd-ru() {
     install_dirs
 
-    sed -i "10i#Set bit13 of 0xF9142820 to enable power to RF transceiver(Koror) on adrv904x-rd-ru board."   "${WORKDIR}/startup.sh"
-    sed -i 's/#ENABLE-TRANSCEIVERS#/\/opt\/uiomem 0xF9142820 0x2000 \&> \/dev\/null #ENABLE-TRANSCEIVERS#/g' "${WORKDIR}/startup.sh"
-
     #install poweroff
     install -m 755 "${WORKDIR}/poweroff.sh"         "${D}${sbindir}"
 
     #install led apps
     install -d "${D}/opt/led_apps"
     install -m 755 "${WORKDIR}/led_apps/blink"         "${D}/opt/led_apps/"
-    install -m 755 "${WORKDIR}/led_apps/hello"         "${D}/opt/led_apps/"
     install -m 755 "${WORKDIR}/led_apps/scroll_client" "${D}/opt/led_apps/"
     install -m 755 "${WORKDIR}/led_apps/scroll_server" "${D}/opt/led_apps/"
     install -m 755 "${WORKDIR}/led_apps/toggle"        "${D}/opt/led_apps/"
@@ -62,6 +59,7 @@ do_install() {
         install -m 755 "${WORKDIR}/heartbeat.sh" "${D}${sbindir}"
     fi
     install -m 755 "${WORKDIR}/startup.sh" "${D}${sbindir}"
+    install -m 755 "${WORKDIR}/recal_corepll.sh" "${D}${sbindir}"
 
     #install temp-mon
     install -m 755 "${WORKDIR}/temp-mon.sh" "${D}${sbindir}"

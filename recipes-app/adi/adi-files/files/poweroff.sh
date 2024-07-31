@@ -16,7 +16,7 @@ else
     #achieved for Adrv904x-rd-ru; 
     #2)if R150 remains with 187K, after the command is sent, press the 
     #push button S2 to power on the Adrv904x-rd-ru to obtain the full cold reset.
-    uiomem 0xF9142820 0x8000 &> /dev/null
+    uiomem 0 0 0x142820 0x8000 &> /dev/null
 fi
 
 exit 0

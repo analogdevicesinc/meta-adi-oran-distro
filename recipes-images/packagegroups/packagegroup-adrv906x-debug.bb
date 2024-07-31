@@ -8,18 +8,28 @@ PACKAGES = "${PN}"
 
 RDEPENDS:${PN} = " \
     devmem2 \
-    gdbserver \
-    gdb \
     strace \
     valgrind \
-    iperf2 \
-    iperf3 \
     iftop \
     sysstat \
-    i2c-tools \
-    linuxptp \
     tcpdump \
+    tcpreplay \
     libcap \
     libcap-bin \
     sudo \
-	"
+    netsniff-ng \
+    wget \
+    rsync \
+    kernel-dev \
+    kernel-devsrc \
+    cmake \
+    spidev-test \
+    ldd \
+    e2fsprogs \
+    perf \
+    iperf2 \
+    iperf3 \
+    i2c-tools \
+    net-tools \
+    adrv906x-debug-files \
+    "

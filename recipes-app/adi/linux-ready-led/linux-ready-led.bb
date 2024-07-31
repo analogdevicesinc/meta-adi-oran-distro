@@ -10,7 +10,7 @@ S = "${WORKDIR}"
 
 inherit update-rc.d
 INITSCRIPT_NAME = "linux-ready-led"
-INITSCRIPT_PARAMS = "start 99 5 . stop 40 1 ."
+INITSCRIPT_PARAMS = "start 99 5 . stop 40 0 ."
 
 do_install() {
     install -d          "${D}${sysconfdir}/init.d"

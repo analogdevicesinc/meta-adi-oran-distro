@@ -1,0 +1,28 @@
+###############################################################################
+#! /bin/sh
+set -e
+
+PIDFILE=/var/run/pushbutton-mon.pid
+
+# source function library
+. /etc/init.d/functions
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+  start)
+        plat=$(tr -d '\0' < /proc/device-tree/chosen/boot/plat)
+        # Push button is active low, meaning platforms like SystemC were instantly resetting, so only run this service on actual hardware.
+        if [[ $plat == "asic" ]]; then
+            echo "Starting Pushbutton Monitoring Service - Starting..."
+            /usr/local/bin/pushbutton-mon.sh &
+        fi
+        ;;
+  stop)
+        echo -n "Stopping Pushbutton Monitoring Service - Nothing to be done"
+        ;;
+  *)
+        echo "Usage: /etc/init.d/pushbutton-mon {start|stop}"
+        exit 1
+esac
+exit 0

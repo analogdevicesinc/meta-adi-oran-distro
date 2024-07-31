@@ -29,6 +29,7 @@ RDEPENDS:${PN} = " \
 	iproute2 \
 	adi-files-sysv \
 	os-release \
+    mosquitto \
 	"
 RDEPENDS:${PN}:append:enable_systemd = "adi-files"
 RDEPENDS:${PN}:remove:enable_systemd = "adi-files-sysv"

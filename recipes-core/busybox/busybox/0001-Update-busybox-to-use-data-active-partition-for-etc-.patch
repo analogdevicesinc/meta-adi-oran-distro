@@ -1,0 +1,37 @@
+From d71fac0f9e6943901e9694e32a912717d1e882ef Mon Sep 17 00:00:00 2001
+From: Brian Neely <brian.neely@analog.com>
+Date: Wed, 20 Dec 2023 08:31:46 -0500
+Subject: [PATCH] Update busybox to use /data/active partition for /etc/passwd,
+ /etc/group, /etc/shadow, and /etc/gshadow
+
+---
+ include/libbb.h | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/include/libbb.h b/include/libbb.h
+index a487828..0975cfa 100644
+--- a/include/libbb.h
++++ b/include/libbb.h
+@@ -126,18 +126,10 @@
+ # include <dmalloc.h>
+ #endif
+ /* Just in case libc doesn't define some of these... */
+-#ifndef _PATH_PASSWD
+-#define _PATH_PASSWD  "/etc/passwd"
+-#endif
+-#ifndef _PATH_GROUP
+-#define _PATH_GROUP   "/etc/group"
+-#endif
+-#ifndef _PATH_SHADOW
+-#define _PATH_SHADOW  "/etc/shadow"
+-#endif
+-#ifndef _PATH_GSHADOW
+-#define _PATH_GSHADOW "/etc/gshadow"
+-#endif
++#define _PATH_PASSWD  "/data/active/etc/passwd"
++#define _PATH_GROUP   "/data/active/etc/group"
++#define _PATH_SHADOW  "/data/active/etc/shadow"
++#define _PATH_GSHADOW "/data/active/etc/gshadow"
+ #if defined __FreeBSD__ || defined __OpenBSD__
+ # include <netinet/in.h>
+ # include <arpa/inet.h>

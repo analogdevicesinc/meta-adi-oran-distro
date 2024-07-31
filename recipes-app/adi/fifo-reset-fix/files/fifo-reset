@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Copyright 2024 Analog Devices Inc.
+# Released under MIT licence
+
+uiomem 0 0 0x1401F0 0x11FFF0
+uiomem 0 0 0x1401F4 0x11FFF0
+uiomem 0 0 0x1401F0 0xFFF0
+uiomem 0 0 0x1401F4 0xFFF0

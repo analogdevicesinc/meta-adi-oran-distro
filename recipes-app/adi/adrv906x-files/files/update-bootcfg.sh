@@ -56,7 +56,8 @@ read_bootcfg_partition() {
 
     if [ "${BOOT_DEV_ID}" != "qspi0" ]
     then
-        BOOTCFG_PART_NUM=$(gdisk -l "$BOOT_DEV" | grep " ${BOOTCFG_PART_NAME}" | tr -s " " " " | cut -d' ' -f2)
+        BOOTCFG_PART_NUM=$(for part in $(ls ${BOOT_DEV}p*); do udevadm info "$part" | grep -q "PARTNAME=$BOOTCFG_PART_NAME" && echo "$part" && break; done)
+        BOOTCFG_PART_NUM=${BOOTCFG_PART_NUM#*${BOOT_DEV}p}
         BOOTCFG_PART="${BOOT_DEV}p${BOOTCFG_PART_NUM}"
     else
         BOOTCFG_PART_NUM=$(cat /proc/mtd | grep "${BOOTCFG_PART_NAME}" | cut -d ":" -f1 | cut -b 4-)
@@ -64,7 +65,7 @@ read_bootcfg_partition() {
     fi
 
     # Get bootcfg partition
-    dd if="$BOOTCFG_PART" of="$TMP_BOOTCFG_BIN"
+    dd if="$BOOTCFG_PART" of="$TMP_BOOTCFG_BIN" 2> /dev/null
 
     # Get size of bootcfg partition
     bootcfg_size=$(stat -c %s "$TMP_BOOTCFG_BIN")
@@ -75,7 +76,7 @@ read_bootcfg_partition() {
         create_new_dt
     else
         # Obtain previous crc
-        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" count=1
+        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" count=1 2> /dev/null
         xxd -p "$TMP_BOOTCFG_VAL" > "$TMP_BOOTCFG_TXT"
         crc=$(cat "$TMP_BOOTCFG_TXT")
         b0=$(echo "$crc" | cut -c7-8)
@@ -85,7 +86,7 @@ read_bootcfg_partition() {
         crc_prev=$(echo "${b0}${b1}${b2}${b3}")
 
         # Obtain dtb size
-        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" skip=2 count=1
+        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" skip=2 count=1 2> /dev/null
         xxd -p "$TMP_BOOTCFG_VAL" > "$TMP_BOOTCFG_TXT"
         dtb_size=$(cat "$TMP_BOOTCFG_TXT")
         b0=$(echo "$dtb_size" | cut -c7-8)
@@ -93,11 +94,18 @@ read_bootcfg_partition() {
         b2=$(echo "$dtb_size" | cut -c3-4)
         b3=$(echo "$dtb_size" | cut -c1-2)
         dtb_size=$(echo "${b0}${b1}${b2}${b3}")
-        dtb_size=$(echo $((16#"$dtb_size")))
+        dtb_size=$(echo $((16#$dtb_size)))
+
+        if [ "$dtb_size" -eq 0 ]; then
+            # Create empty device tree if bootcfg partition is empty
+            logger "Bootcfg partition empty, initializing bootcfg partition"
+            create_new_dt
+            return
+        fi
 
         # Obtain version number + dtb size + dtb without crc
         crc_size=$(($dtb_size + 8))
-        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs=1 skip=4 count="$crc_size"
+        dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs=1 skip=4 count="$crc_size" 2> /dev/null
 
         # Calculate crc
         crc=$(crc32 "$TMP_BOOTCFG_VAL")
@@ -109,7 +117,7 @@ read_bootcfg_partition() {
             create_new_dt
         else
             # Obtain version
-            dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" skip=1 count=1
+            dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_VAL" bs="$DATA_BS" skip=1 count=1 2> /dev/null
             xxd -p "$TMP_BOOTCFG_VAL" > "$TMP_BOOTCFG_TXT"
             version=$(cat "$TMP_BOOTCFG_TXT")
             b0=$(echo "$version" | cut -c7-8)
@@ -124,7 +132,7 @@ read_bootcfg_partition() {
                 exit 1
             fi
             # Obtain just dtb
-            dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_DTB" bs=1 skip=12 count="$dtb_size"
+            dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_DTB" bs=1 skip=12 count="$dtb_size" 2> /dev/null
         fi
 
         rm "$TMP_BOOTCFG_BIN"
@@ -147,7 +155,7 @@ update_bootcfg_partition() {
     rem=$(("$dtb_size" % "$DATA_BS"))
     if [ $rem != 0 ]; then
         count=$(($DATA_BS-$rem))
-        dd if=/dev/zero of="$TMP_BOOTCFG_DTB" bs=1 seek="$dtb_size" count="$count"
+        dd if=/dev/zero of="$TMP_BOOTCFG_DTB" bs=1 seek="$dtb_size" count="$count" 2> /dev/null
         dtb_size=$(($dtb_size + $count))
     fi
     dtb_size=$(printf "%08x" "$dtb_size")
@@ -161,7 +169,7 @@ update_bootcfg_partition() {
     xxd -r -p "$TMP_BOOTCFG_TXT" > "$TMP_BOOTCFG_BIN"
 
     # Add dtb
-    dd if="$TMP_BOOTCFG_DTB" of="$TMP_BOOTCFG_BIN" bs="$DATA_BS" seek=2
+    dd if="$TMP_BOOTCFG_DTB" of="$TMP_BOOTCFG_BIN" bs="$DATA_BS" seek=2 2> /dev/null
 
     # Calculate crc
     crc=$(crc32 "$TMP_BOOTCFG_BIN")
@@ -175,7 +183,7 @@ update_bootcfg_partition() {
     xxd -r -p "$TMP_BOOTCFG_TXT" > "$TMP_BOOTCFG_CRC"
 
     # Add crc
-    dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_CRC" bs="$DATA_BS" seek=1
+    dd if="$TMP_BOOTCFG_BIN" of="$TMP_BOOTCFG_CRC" bs="$DATA_BS" seek=1 2> /dev/null
 
     # Update partition
     updated_size=$(stat -c %s "$TMP_BOOTCFG_CRC")
@@ -187,7 +195,7 @@ update_bootcfg_partition() {
         flash_erase "$BOOTCFG_PART" 0 0
         flashcp "$TMP_BOOTCFG_CRC" "$BOOTCFG_PART"
     else
-        dd if="$TMP_BOOTCFG_CRC" of="$BOOTCFG_PART"
+        dd if="$TMP_BOOTCFG_CRC" of="$BOOTCFG_PART" 2> /dev/null
     fi
     logger "Updated bootcfg partition"
 
@@ -198,22 +206,32 @@ update_bootcfg_partition() {
 }
 
 print_usage() {
-    echo "Usage: update-bootcfg.sh [ARGUMENT [VALUE]]"
-    echo "ARGUMENT includes:"
-    echo "   --clk-pll [VALUE]  Read PLL clock selection, or set it to VALUE: 0 (7 GHz) or 1 (11 GHz)"
-    echo "   --orx-adc [VALUE]  Read ORX ADC clock selection, or set it to VALUE: 0 (3932 MHz), 1 (7864 MHz), 2 (5898 MHz), or 3 (2949 MHz)"
+    echo "Usage: update-bootcfg.sh [<parameter> [<value>]]"
+    echo ""
+    echo "Description: Add or modify a parameter value, or read it if no value is provided" 
+    echo ""
+    echo "<parameter>:"
+    echo "   --clk-pll          PLL clock selection: 0 (7 GHz) or 1 (11 GHz)"
+    echo "   --orx-adc          ORX adc clock selection: 0 (3932 MHz), 1 (7864 MHz), 2 (5898 MHz), or 3 (2949 MHz)"
+    echo "   --eth-1g           Primary 1G ethernet mac address. Format: ab:cd:ef:gh:ij:kl"
+    echo "   --eth-fh0          Primary first 10/25G ethernet mac address"
+    echo "   --eth-fh1          Primary second 10/25G ethernet mac address"
+    echo "   --eth-1g-sec       Secondary 1G ethernet mac address"
+    echo "   --eth-fh0-sec      Secondary first 10/25G ethernet mac address"
+    echo "   --eth-fh1-sec      Secondary second 10/25G ethernet mac address"
+    echo "   --factory-reset    Factory reset selection: 1 to enable"
     echo "   --help | -h        Display this message"
 }
 
 modify_dt() {
     read_bootcfg_partition
-    fdtput -t "$1" -p "$TMP_BOOTCFG_DTB" "$2" "$3" "$4"
+    fdtput -t "$1" -p $TMP_BOOTCFG_DTB "$2" "$3" $4
     update_bootcfg_partition
 }
 
 read_dt() {
     read_bootcfg_partition
-    fdtget "$TMP_BOOTCFG_DTB" "$1" "$2"
+    fdtget -t $1 "$TMP_BOOTCFG_DTB" "$2" "$3"
     rm "$TMP_BOOTCFG_DTB"
 }
 
@@ -229,7 +247,7 @@ do
     case "$1" in
       --clk-pll )
         if [ -z "$value" ]; then
-            value=$(read_dt "/clk-pll" "freq")
+            value=$(read_dt "i" "/clk-pll" "freq")
             echo "READ clk-pll: $value"
             logger "Read bootcfg partition clk-pll freq: $value"
         elif [ "$value" = "1" ] || [ "$value" = "0" ]; then
@@ -243,7 +261,7 @@ do
         ;;
       --orx-adc )
         if [ -z "$value" ]; then
-            value=$(read_dt "/orx-adc" "freq")
+            value=$(read_dt "i" "/orx-adc" "freq")
             echo "READ orx-adc: $value"
             logger "Read bootcfg partition orx-adc freq: $value"
         elif [ "$value" = "0" ] || [ "$value" = "1" ] || [ "$value" = "2" ] || [ "$value" = "3" ]; then
@@ -252,6 +270,48 @@ do
             shift
         else
             logger "Invalid orx-adc value: $value"
+            exit
+        fi
+        ;;
+      --eth-1g | --eth-fh0  | --eth-fh1 | --eth-1g-sec | --eth-fh0-sec  | --eth-fh1-sec )
+        MAC_REGEX="^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"
+        declare -A node_name=(
+              ['--eth-1g']='/emac1'
+              ['--eth-fh0']='/emac2'
+              ['--eth-fh1']='/emac3'
+              ['--eth-1g-sec']='/emac4'
+              ['--eth-fh0-sec']='/emac5'
+              ['--eth-fh1-sec']='/emac6')
+
+        param=${node_name[$1]}
+	iface_name=$(echo $1 | sed -e 's/--//g')
+
+        if [ -z "$value" ]; then
+            value=$(read_dt "bx" $param "mac-address")
+            mac_format_value=$(echo $value | sed 's/\([0-9]\) /\1:/g') # xx xx xx xx xx xx -> xx:xx:xx:xx:xx:xx
+            echo "READ $iface_name: $mac_format_value"
+            logger "Read $iface_name mac address: $mac_format_value"
+        elif [[ "$value" =~ $MAC_REGEX ]]; then
+            mac=$(echo $value | sed -e 's/:/ /g')   # 00:11:22:33:44:55 --> 00 11 22 33 44 55
+            logger "$iface_name mac address set to $value"
+            modify_dt "bx" $param "mac-address" "$mac"
+            shift
+        else
+            logger "Invalid $iface_name mac address: $value" | sed -e 's/--//g'
+            exit
+        fi
+        ;;
+      --factory-reset )
+        if [ -z "$value" ]; then
+            value=$(read_dt "i" "/factory-reset" "status")
+            echo "READ factory-reset: $value"
+            logger "Read bootcfg partition factory-reset status: $value"
+        elif [ "$value" = "1" ]; then
+            logger "Update bootcfg partition factory-reset to $value"
+            modify_dt "i" "/factory-reset" "status" "$value"
+            shift
+        else
+            logger "Invalid factory-reset status: $value"
             exit
         fi
         ;;
