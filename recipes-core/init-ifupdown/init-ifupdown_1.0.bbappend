@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files/${MACHINE}:${THISDIR}/files:${THISDIR}"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/${MACHINE}:${THISDIR}/files/${ADI_SOC}:${THISDIR}/files:${THISDIR}"
 SRC_URI:append = "   file://default-interfaces \
                     file://eth-fallback.sh"
 
