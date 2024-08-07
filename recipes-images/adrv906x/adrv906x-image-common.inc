@@ -46,7 +46,11 @@ IMAGE_INSTALL:append = " \
     "
 
 IMAGE_INSTALL:append:titan = " pushbutton-mon"
-IMAGE_INSTALL:append:denali = " pushbutton-mon"
+IMAGE_INSTALL:append:titan-4 = " adrv906x-qsfp-sfp-control"
+IMAGE_INSTALL:append:denali = " \
+    pushbutton-mon \
+    adrv906x-qsfp-sfp-control \
+    "
 
 #TODO - add more packages, features to debug image when we support 4G  SD card and emmc
 #NOW  - rootfs is limited to 256MB(support for larger in adi-console-debug image)

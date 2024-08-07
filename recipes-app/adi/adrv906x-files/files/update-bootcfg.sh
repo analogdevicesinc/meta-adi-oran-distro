@@ -197,6 +197,7 @@ update_bootcfg_partition() {
     else
         dd if="$TMP_BOOTCFG_CRC" of="$BOOTCFG_PART" 2> /dev/null
     fi
+    sync
     logger "Updated bootcfg partition"
 
     rm "$TMP_BOOTCFG_DTB"

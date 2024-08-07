@@ -48,4 +48,5 @@ then
 	chown swupdate "${DATA_RESET}"
 fi
 
+sync
 exit 0
