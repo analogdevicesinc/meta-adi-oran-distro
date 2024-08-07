@@ -8,11 +8,11 @@ PIDFILE=/var/run/qsfp-enable.pid
 
 case "$1" in
   start)
-        echo -n "Enable fronthaul QSFP transmission and I2C"
+        echo "Enable fronthaul QSFP transmission and I2C"
         /usr/bin/gpioset gpiochip0 58=0 65=0
         ;;
   stop)
-        echo -n "Disable fronthaul QSFP transmission and I2C"
+        echo "Disable fronthaul QSFP transmission and I2C"
         /usr/bin/gpioset gpiochip0 58=1 65=1
         ;;
   *)

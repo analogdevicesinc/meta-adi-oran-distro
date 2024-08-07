@@ -14,12 +14,12 @@ case "$1" in
         plat=$(tr -d '\0' < /proc/device-tree/chosen/boot/plat)
         # Push button is active low, meaning platforms like SystemC were instantly resetting, so only run this service on actual hardware.
         if [[ $plat == "asic" ]]; then
-            echo "Starting Pushbutton Monitoring Service - Starting..."
+            echo "Starting Pushbutton Monitoring Service..."
             /usr/local/bin/pushbutton-mon.sh &
         fi
         ;;
   stop)
-        echo -n "Stopping Pushbutton Monitoring Service - Nothing to be done"
+        echo "Stopping Pushbutton Monitoring Service - Nothing to be done"
         ;;
   *)
         echo "Usage: /etc/init.d/pushbutton-mon {start|stop}"

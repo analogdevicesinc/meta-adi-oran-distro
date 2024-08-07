@@ -11,11 +11,9 @@ export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
 case "$1" in
   start)
-        echo -n "Turn on LED0"
         gpioset gpiochip0 74=1
         ;;
   stop)
-        echo -n "Turn off LED0"
         gpioset gpiochip0 74=0
         ;;
   *)

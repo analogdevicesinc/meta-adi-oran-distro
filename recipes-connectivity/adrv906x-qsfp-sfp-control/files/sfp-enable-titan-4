@@ -8,11 +8,11 @@ PIDFILE=/var/run/sfp-enable.pid
 
 case "$1" in
   start)
-        echo -n "Enable fronthaul SFP0 & SFP1 transmission"
+        echo "Enable fronthaul SFP0 & SFP1 transmission"
         /usr/bin/gpioset gpiochip0 70=0 56=0
         ;;
   stop)
-        echo -n "Disable fronthaul SFP0 & SFP1 transmission"
+        echo "Disable fronthaul SFP0 & SFP1 transmission"
         /usr/bin/gpioset gpiochip0 70=1 56=1
         ;;
   *)
