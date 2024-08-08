@@ -9,7 +9,7 @@ IMAGE_INSTALL:append = " \
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 
 # needs to be in sync with the size in adrv906x_mkext4fs()
-IMAGE_ROOTFS_SIZE = "864256"
+IMAGE_ROOTFS_SIZE = "1908736"
 
 IMAGE_LINGUAS = " "
 
