@@ -80,11 +80,11 @@ then
 		echo "Waiting up to $PPP_LINK_TIMEOUT seconds to establish PPP link..."
 		pppd $PPP_DEV lock noipv6 asyncmap 0 local $PRIMARY_IP_ADDR:$SECONDARY_IP_ADDR $PPP_BAUD xonxoff nodetach call adrv906x-secondary > /dev/null 2>&1 &
 		NEXT_WAIT_TIME=0
-		until [ $NEXT_WAIT_TIME -eq $PPP_LINK_TIMEOUT_MS ] || ifconfig ppp0 2> /dev/null | grep "UP POINTOPOINT"  > /dev/null 2>&1; do
+		until [ $NEXT_WAIT_TIME -eq $PPP_LINK_TIMEOUT_MS ] || ifconfig ppp0 2> /dev/null | grep "UP,POINTOPOINT"  > /dev/null 2>&1; do
 			sleep 0.001
 			NEXT_WAIT_TIME=$((NEXT_WAIT_TIME+1))
 		done
-		ifconfig ppp0 2> /dev/null | grep "UP POINTOPOINT"  > /dev/null 2>&1
+		ifconfig ppp0 2> /dev/null | grep "UP,POINTOPOINT"  > /dev/null 2>&1
 		RESULT=$?
 		if [ $RESULT -ne 0 ]
 		then
