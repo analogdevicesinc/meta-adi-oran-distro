@@ -1,252 +1,289 @@
 #!/bin/sh
+# Copyright 2024 Analog Devices Inc.
+# Released under MIT licence
+#
 
+##############################################################
+# Update images script
+# Burns the eMMC/QSPI images and updates the inactive slots
+##############################################################
+
+#------------------------------------------------------------------------------
+# Constants
+#------------------------------------------------------------------------------
 PATH=/bin:/usr/sbin:/usr/bin
 
-DEFAULT_SW_PACKAGE_FILE="/tmp/update_image.tar"
+BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device | tr -d '\0') # sd0, emmc0, qspi0
+EMMC_DEV_NAME="/dev/mmcblk0"
+FLASH_DEV_NAME="/dev/mtd0"
 
+ACTIVE_SLOT=$(cat /proc/device-tree/chosen/boot/slot | tr -d '\0')
+
+IMAGE_DIR="/data/active/update_images"
+EMMC_IMG="$IMAGE_DIR/mmc.dat"
+FLASH_IMG="$IMAGE_DIR/nor_flash.dat"
+
+#------------------------------------------------------------------------------
+# Functions
+#------------------------------------------------------------------------------
 print_usage() {
-	echo ""
-	echo "Usage: $0 [target] [option]"
-	echo ""
-	echo "For example:"
-	echo " $0 current   - sw update: update inactive slot partitions on the same boot media"
-	echo " $0 emmc      - initial programming: update all partitions for emmc from sd card"
-	echo " $0 hybrid    - initial programming: update all partitions for flash/emmc hybrid mode from sd card"
-	echo " !! for systemc - no space for package extraction, please transfer all images to /data/active/update_images !!!"
-	echo ""
+	echo "Usage: $0 [initemmc|inithybrid|update] <swupdate_package>"
+	echo "       $0 initemmc   <swupdate_package>  - eMMC initial programming"
+	echo "       $0 inithybrid <swupdate_package>  - eMMC/QSPI initial programming"
+	echo "       $0 update     <swupdate_package>  - Update inactive slots from the current boot media"
 }
 
 unpack_package() {
-	cmd="tar xf $SW_PACKAGE_FILE -C /tmp"
-	echo "no enough space on systemc, please transfer all images to /data/active/update_images/ before running the script"
-	echo " The script will be upgraded to extract package when we have real HW"
-#	eval "$cmd"
+	package=$1
+	rm -rf $IMAGE_DIR
+	mkdir -p $IMAGE_DIR
+	echo "Unpacking $package..."
+	cmd="tar xfv $package -C $IMAGE_DIR"
+	eval "$cmd"
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		echo "ERROR: Cannot uncompress $package"
+		exit 1
+	fi
+	echo
 }
 
 find_partname() {
-	local CUR_DEV_ID=$1
-	local CUR_DEV=$2
-	local PART_NAME=$3
-	echo "$CUR_DEV_ID"
-	echo "$CUR_DEV"
-	echo "$PART_NAME"
-
-	if [ "${CUR_DEV_ID}" != "qspi0" ]
+	boot_dev=$1
+	part_name=$2
+	if [ "${boot_dev}" != "/dev/mtd" ]
 	then
-		PART_NUM=$(gdisk -l "$CUR_DEV" | grep " ${PART_NAME}" | tr -s " " " " | cut -d' ' -f2)
-		DEV_PART=${CUR_DEV}p${PART_NUM}
+		part_num=$(gdisk -l "$boot_dev" | grep " ${part_name}" | awk '{print $1;}')
+		dev_part=${boot_dev}p${part_num}
 	else
-		PART_NUM=$(grep "${PART_NAME}" /proc/mtd | cut -d ":" -f1 | cut -b 4-)
-		DEV_PART=${CUR_DEV}${PART_NUM}
+		part_num=$(grep "${part_name}" /proc/mtd | cut -d ":" -f1 | cut -b 4-)
+		dev_part=${boot_dev}${part_num}
 	fi
-	echo "$DEV_PART"
+	echo $dev_part
 }
 
 set_up_device_names() {
-	BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device) 
-	if [ "$INITIAL_PROGRAM_EMMC" = true ]; then
-		if [ "$BOOT_DEV_ID" = "sd0" ]; then
-			TARGET_DEV_ID="emmc0"
-		else
-			logger -s "Error: Initial programming can only be done from SD card!"
-			exit 1
-		fi
-	elif [ "$INITIAL_PROGRAM_HYBRID" = true ]; then
-		if [ "$BOOT_DEV_ID" = "sd0" ]; then
-			TARGET_DEV_ID="qspi0"
-		else
-			logger -s "Error: Initial programming can only be done from SD card!"
-			exit 1
-		fi
+	bootctrl_part_name=$(find_partname $boot_dev bootctrl)
+	   boota_part_name=$(find_partname $boot_dev boot_a)
+	   bootb_part_name=$(find_partname $boot_dev boot_b)
+	    fipa_part_name=$(find_partname $boot_dev fip_a)
+	    fipb_part_name=$(find_partname $boot_dev fip_b)
+	 kernela_part_name=$(find_partname $boot_dev kernel_a)
+	 kernelb_part_name=$(find_partname $boot_dev kernel_b)
+
+	if [ "$BOOT_DEV_ID" != "qspi0" ]; then
+		rootfsa_part_name=$(find_partname $boot_dev rootfs_a)
+		rootfsb_part_name=$(find_partname $boot_dev rootfs_b)
+		   data_part_name=$(find_partname $boot_dev data)
 	else
-		TARGET_DEV_ID="$BOOT_DEV_ID"
-	fi
-
-	if [ "${TARGET_DEV_ID}" = "emmc0" ]; then
-		BOOT_DEV="/dev/mmcblk0"
-	elif [ "${TARGET_DEV_ID}" = "sd0" ]; then
-		BOOT_DEV="/dev/mmcblk1"
-	elif [ "${TARGET_DEV_ID}" = "qspi0" ]; then
-		BOOT_DEV="/dev/mtd"
-	else
-		logger -s "Invalid boot device ${TARGET_DEV_ID}"
-		exit 1
-	fi
-
-	# flash MTD device is defined in device tree
-	FLASH_DEV_NAME="/dev/mtd0"	
-
-	EMMC_DEV_NAME="/dev/mmcblk0"
-	
-	#find flash overlay device
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" nor-flash-overlay
-	FLASH_DEV_NAME="$DEV_PART"
-	echo "FLASH_DEV_NAME is $FLASH_DEV_NAME"
-
-	# Find bootctrl partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" bootctrl
-	BOOTCTRL_PART_NAME="$DEV_PART"
-	echo "BOOTCTRL_PART_NAME is $BOOTCTRL_PART_NAME"
-
-	# Find boot_a partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" boot_a
-	BOOTA_PART_NAME="$DEV_PART"
-	echo "BOOTA_PART_NAME is $BOOTA_PART_NAME"
-
-	# Find boot_b partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" boot_b
-	BOOTB_PART_NAME="$DEV_PART"
-	echo "BOOTB_PART_NAME is $BOOTB_PART_NAME"
-
-	# Find fip_a partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" fip_a
-	FIPA_PART_NAME="$DEV_PART"
-	echo "FIPA_PART_NAME is $FIPA_PART_NAME"
-
-	# Find fip_b partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" fip_b
-	FIPB_PART_NAME="$DEV_PART"
-	echo "FIPB_PART_NAME is $FIPB_PART_NAME"
-
-	# Find kernel_a partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" kernel_a
-	KERNELA_PART_NAME="$DEV_PART"
-	echo "KERNELA_PART_NAME is $KERNELA_PART_NAME"
-
-	# Find kernel_b partition number by name
-	find_partname "$TARGET_DEV_ID" "$BOOT_DEV" kernel_b
-	KERNELB_PART_NAME="$DEV_PART"
-	echo "KERNELB_PART_NAME is $KERNELB_PART_NAME"
-
-	if [ "${TARGET_DEV_ID}" != "qspi0" ]; then
-		# Find rootfs_a partition number by name
-		find_partname "$TARGET_DEV_ID" "$BOOT_DEV" rootfs_a
-		ROOTFSA_PART_NAME="$DEV_PART"
-		echo "ROOTFSA_PART_NAME is $ROOTFSA_PART_NAME"
-
-		# Find rootfs_b partition number by name
-		find_partname "$TARGET_DEV_ID" "$BOOT_DEV" rootfs_b
-		ROOTFSB_PART_NAME="$DEV_PART"
-		echo "ROOTFSB_PART_NAME is $ROOTFSB_PART_NAME"
-
-		# Find data partition number by name
-		find_partname "$TARGET_DEV_ID" "$BOOT_DEV" data
-		DATA_PART_NAME="$DEV_PART"
-		echo "DATA_PART_NAME is $DATA_PART_NAME"
-	else
-		#hybrid boot mode: rootfs on emmc0
-		find_partname "emmc0" "/dev/mmcblk0" rootfs_a
-		ROOTFSA_PART_NAME="$DEV_PART"
-		echo "ROOTFSA_PART_NAME is $ROOTFSA_PART_NAME"
-
-		find_partname "emmc0" "/dev/mmcblk0" rootfs_b
-		ROOTFSB_PART_NAME="$DEV_PART"
-		echo "ROOTFSB_PART_NAME is $ROOTFSB_PART_NAME"
-
-		# Find data partition number by name
-		find_partname "emmc0" "/dev/mmcblk0" data
-		DATA_PART_NAME="$DEV_PART"
-		echo "DATA_PART_NAME is $DATA_PART_NAME"
+		# hybrid boot mode: rootfs on emmc0
+		rootfsa_part_name=$(find_partname "/dev/mmcblk0" rootfs_a)
+		rootfsb_part_name=$(find_partname "/dev/mmcblk0" rootfs_b)
+		   data_part_name=$(find_partname "/dev/mmcblk0" data)
 	fi
 }
 
 set_up_image_names() {
-	BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device) 
-        
-	IMAGE_DIR="/data/active/update_images"
-	FLASH_IMG="$IMAGE_DIR/nor_flash.dat"
-	EMMC_IMG="$IMAGE_DIR/emmc.dat"
 	APPPACK_IMG="$IMAGE_DIR/app_pack.bin"
 	BOOTCTRL_IMG="$IMAGE_DIR/bootctrl_cfg.bin"
 	FIP_IMG="$IMAGE_DIR/fip.bin"
-
-	if [ "$INITIAL_PROGRAM_EMMC" = true ]; then
-		KERNEL_IMG="$IMAGE_DIR/kernel.ext4"
-	elif [ "$INITIAL_PROGRAM_HYBRID" = true ]; then
-		KERNEL_IMG="$IMAGE_DIR/kernel_fit.itb"
-	else
-		if [ "$BOOT_DEV_ID" = "qspi0" ]; then
-			KERNEL_IMG="$IMAGE_DIR/kernel_fit.itb"
-		else
-			KERNEL_IMG="$IMAGE_DIR/kernel.ext4"
-		fi
-	fi
-
-	ROOTFS_IMG="$IMAGE_DIR/rootfs_ext4.img"
+	ROOTFS_IMG="$IMAGE_DIR/rootfs.ext4.verity"
 	DATA_IMG="$IMAGE_DIR/data.ext4"
+	case $BOOT_DEV_ID in
+		emmc0|sd0) KERNEL_IMG="$IMAGE_DIR/kernel.ext4" ;;
+		qspi0)     KERNEL_IMG="$IMAGE_DIR/kernel_fit.itb" ;;
+	esac
 }
 
-program_all_partitions() {
-	echo "programming emmc...."
-	cmd="dd if=$EMMC_IMG of=$EMMC_DEV_NAME"
-	echo "$cmd"
+program_emmc() {
+	cmd="dd if=$EMMC_IMG of=$EMMC_DEV_NAME >/dev/null 2>&1"
 	eval "$cmd"
-	if [ "$INITIAL_PROGRAM_HYBRID" = true ]; then
-		echo "programming flash...."
-		cmd="flash_erase $FLASH_DEV_NAME 0 0"
-		echo "$cmd"
-		eval "$cmd"
-		cmd="flashcp $FLASH_IMG $FLASH_DEV_NAME"
-		echo "$cmd"
-		eval "$cmd"
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		echo "ERROR: Cannot program eMMC"
+		exit 1
 	fi
+}
+
+program_qspi() {
+		flash_dev_name=$(find_partname /dev/mtd nor-flash-overlay)
+		echo -e "\tErasing flash..."
+		cmd="flash_erase $flash_dev_name 0 0 >/dev/null 2>&1"
+		eval "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot erase flash"
+			exit 1
+		fi
+		echo -e "\tProgramming flash..."
+		cmd="flashcp $FLASH_IMG $flash_dev_name"
+		eval "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot program flash"
+			exit 1
+		fi
 }
 
 program_one_partition() {
-	CUR_IMG=$1
-	CUR_DEV=$2
-	CUR_ON_FLASH=$3
-	if [ "$CUR_ON_FLASH" = true ]; then
-		cmd="flash_erase $CUR_DEV 0 0"
-		echo "$cmd"
+	image=$1
+	partition=$2
+
+	if [ "$(echo $partition | grep /dev/mtd)" != "" ]; then
+		echo -e "\tErasing flash partition $partition..."
+		cmd="flash_erase $partition 0 0"
 		eval "$cmd"
-		cmd="flashcp $CUR_IMG $CUR_DEV"
-		echo "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot erase flash partition $partition"
+			exit 1
+		fi
+		echo -e "\t$(basename $image) to $partition..."
+		cmd="flashcp $image $partition"
 		eval "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot program flash partition $partition"
+			exit 1
+		fi
 	else
-		cmd="dd if=$CUR_IMG of=$CUR_DEV"
-		echo "$cmd"
+		echo -e "\t$(basename $image) to $partition..."
+		cmd="dd if=$image of=$partition >/dev/null 2>&1"
 		eval "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot program mmc partition $partition"
+			exit 1
+		fi
 	fi
 }
 
-program_inactive_partitions() {
-	if [ "${TARGET_DEV_ID}" != "qspi0" ]; then
-		ON_FLASH=false
-	else
-		ON_FLASH=true
-	fi
+get_app_pack_version() {
+	path=$1
+	# Version 0xAAaa.0xBBbb.0xCCcc is stored in the app-pack binary as:
+	#  0 ...  8  9 10 11 12 13 14 15
+	# xx ... bb BB aa AA xx xx cc CC
+	major=$(hexdump $path -s 10 -n 2 -e '1/2 "%u\n"')
+	minor=$(hexdump $path -s  8 -n 2 -e '1/2 "%u\n"')
+	patch=$(hexdump $path -s 14 -n 2 -e '1/2 "%u\n"')
+	echo $major.$minor.$patch
+}
 
-	ACTIVE_TE_SLOT=$(cat /proc/device-tree/chosen/boot/te-slot)
-	echo "ACTIVE_TE_SLOT: $ACTIVE_TE_SLOT"
+get_lower_version() {
+	# sort from coreutils:
+	# echo "$1\n$2" | sort -V | head -n 1
+	# sort from busybox:
+	echo -e "$1\n$2" | sort -V | head -n 1
+}
+
+version_is_lower_than() {
+	if [ "$1" == "$2" ]; then return 0; fi
+	if [ "$1" = "$(get_lower_version $1 $2)" ]; then return 1; else return 0; fi
+}
+
+version_is_higher_than() {
+	if [ "$1" == "$2" ]; then return 0; fi
+	version_is_lower_than $1 $2
+	is_lower=$?
+	if [ $is_lower -eq 1 ]; then return 0; else return 1; fi
+}
+
+program_app_pack() {
+	APPPACK_IMG="$IMAGE_DIR/app_pack.bin"
+
+	ACTIVE_TE_SLOT=$(cat /proc/device-tree/chosen/boot/te-slot | tr -d '\0')
+
 	if [ "$ACTIVE_TE_SLOT" != a ]; then
-		program_one_partition "$APPPACK_IMG" "$BOOTA_PART_NAME" "$ON_FLASH" 
+		active_te_part_name="$boota_part_name"
+		inactive_te_part_name="$bootb_part_name"
 	else
-		program_one_partition "$APPPACK_IMG" "$BOOTB_PART_NAME" "$ON_FLASH" 
+		active_te_part_name="$bootb_part_name"
+		inactive_te_part_name="$boota_part_name"
 	fi
 
-	ACTIVE_SLOT=$(cat /proc/device-tree/chosen/boot/slot)
-	echo "ACTIVE_SLOT: $ACTIVE_SLOT"
+	vNew=$(get_app_pack_version $APPPACK_IMG)
+	vA=$(get_app_pack_version $boota_part_name)
+	vB=$(get_app_pack_version $bootb_part_name)
+
+	echo -e "\tApp-pack versions: A:$vA  B:$vB  New:$vNew"
+
+	if [ "$vNew" ==  "$vA" ] && [ "$vNew" ==  "$vB" ]; then
+		echo -e "\tApp-pack slots up to date"
+		return
+	fi
+
+	version_is_higher_than $vNew $vA; higher_than_A=$?;
+	version_is_higher_than $vNew $vB; higher_than_B=$?;
+	version_is_lower_than  $vNew $vA; lower_than_A=$?;
+	version_is_lower_than  $vNew $vB; lower_than_B=$?;
+
+	if [ $higher_than_A -eq 1 ] && [ $higher_than_B -eq 1 ]; then
+		echo -e "\tNew version is higher or equal than both A/B versions"
+		echo -e "\tReplacing inactive slot..."
+		program_one_partition "$APPPACK_IMG" "$inactive_te_part_name"
+	elif [ $lower_than_A -eq 1 ] && [ $lower_than_B -eq 1 ]; then
+		echo -e "\tNew version is lower than both A/B versions"
+		echo -e "\tReplacing both slots..."
+		program_one_partition "$APPPACK_IMG" "$active_te_part_name"
+		sync
+		program_one_partition "$APPPACK_IMG" "$inactive_te_part_name"
+	else
+		echo -e "\tNew version is between A/B versions"
+		echo -e "\tCopying active to inactive..."
+		cmd="dd if=$active_te_part_name of=$inactive_te_part_name >/dev/null 2>&1"
+		eval "$cmd"
+		ret=$?
+		if [ $ret -ne 0 ]; then
+			echo "ERROR: Cannot copy active to inactive app-pack"
+			exit 1
+		fi
+		sync
+		echo -e "\tReplacing active slot..."
+		program_one_partition "$APPPACK_IMG" "$active_te_part_name"
+	fi
+}
+
+update_boot_dev() {
+	case $BOOT_DEV_ID in
+		emmc0) boot_dev="/dev/mmcblk0" ;;
+		sd0)   boot_dev="/dev/mmcblk1" ;;
+		qspi0) boot_dev="/dev/mtd" ;;
+		*)
+			echo "ERROR: Invalid boot device"
+			exit 1
+	esac
+
+	set_up_device_names
+	set_up_image_names
 
 	if [ "$ACTIVE_SLOT" != a ]; then
-		program_one_partition "$FIP_IMG" "$FIPA_PART_NAME" "$ON_FLASH" 
-		program_one_partition "$KERNEL_IMG" "$KERNELA_PART_NAME" "$ON_FLASH" 
-		program_one_partition "$ROOTFS_IMG" "$ROOTFSA_PART_NAME" false 
+		program_one_partition "$FIP_IMG" "$fipa_part_name"
+		program_one_partition "$KERNEL_IMG" "$kernela_part_name"
+		program_one_partition "$ROOTFS_IMG" "$rootfsa_part_name"
 	else
-		program_one_partition "$FIP_IMG" "$FIPB_PART_NAME" "$ON_FLASH" 
-		program_one_partition "$KERNEL_IMG" "$KERNELB_PART_NAME" "$ON_FLASH" 
-		program_one_partition "$ROOTFS_IMG" "$ROOTFSB_PART_NAME" false 
+		program_one_partition "$FIP_IMG" "$fipb_part_name"
+		program_one_partition "$KERNEL_IMG" "$kernelb_part_name"
+		program_one_partition "$ROOTFS_IMG" "$rootfsb_part_name"
 	fi
 
-	# update bootctrl with new active slot
+	# Update bootctrl with new active slot
 
-	cmd="dd if=$BOOTCTRL_PART_NAME of=/tmp/bootctrl.bin"
-	echo "$cmd"
+	echo
+	echo "Updating active slot indication...."
+	cmd="dd if=$bootctrl_part_name of=/tmp/bootctrl.bin >/dev/null 2>&1"
 	eval "$cmd"
-	cmd="dd if=/tmp/bootctrl.bin of=/tmp/header.bin bs=1 count=8"
-	echo "$cmd"
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		echo "ERROR: Cannot dump bootctrl partition"
+		exit 1
+	fi
+	cmd="dd if=/tmp/bootctrl.bin of=/tmp/header.bin bs=1 count=8 >/dev/null 2>&1"
 	eval "$cmd"
-
+	ret=$?
+	if [ $ret -ne 0 ]; then
+		echo "ERROR: Cannot get bootctrl header"
+		exit 1
+	fi
 	xxd -p /tmp/header.bin > /tmp/tmp.hex
 
 	if [ "$ACTIVE_SLOT" != a ]; then
@@ -257,78 +294,77 @@ program_inactive_partitions() {
 
 	xxd -p -r /tmp/tmp.hex > /tmp/tmp.bin
 	crc=$(crc32 /tmp/tmp.bin)
-	echo "crc: $crc"
 	echo "${crc:6:2}${crc:4:2}${crc:2:2}${crc:0:2}" >> /tmp/tmp.hex
 	xxd -r -p /tmp/tmp.hex > /tmp/new_bootctrl.bin
-	program_one_partition "/tmp/new_bootctrl.bin" "$BOOTCTRL_PART_NAME" "$ON_FLASH" 
+	program_one_partition "/tmp/new_bootctrl.bin" "$bootctrl_part_name"
 }
 
-# program starting point
-case $1 in
-	emmc )
-		INITIAL_PROGRAM_EMMC=true
-		INITIAL_PROGRAM_HYBRID=false
-		SW_UPDATE=false
-	;;
-	hybrid )
-		INITIAL_PROGRAM_HYBRID=true
-		INITIAL_PROGRAM_EMMC=false
-		SW_UPDATE=false
-	;;
-	current )
-		INITIAL_PROGRAM_HYBRID=false
-		INITIAL_PROGRAM_EMMC=false
-		SW_UPDATE=true
-	;;
-	-h | --help ) 
+#------------------------------------------------------------------------------
+# Program starting point
+#------------------------------------------------------------------------------
+
+echo "------------------------"
+echo "update-images.sh"
+echo "------------------------"
+
+# Check if 2 positional parameters are provided
+if [ $# -lt 2 ]; then
+    print_usage
+    exit 1
+fi
+
+# Get parameters
+target=$1
+swupdate_package=$2
+
+# Check target and boot media
+case $target in
+	initemmc|inithybrid)
+		if [ "$BOOT_DEV_ID" != "sd0" ]; then
+			echo "ERROR: Initial emmc/qspi programming can only be done booting from SD card!"
+			exit 1
+		fi
+		;;
+	update)
+		;;
+	*)
 		print_usage
-		exit
-	;;
-	* ) 
-		echo "Invalid parameter $1"
-		print_usage
-		exit
-	;;
+		exit 1
+		;;
 esac
 
-echo "INITIAL_PROGRAM_EMMC:   $INITIAL_PROGRAM_EMMC"
-echo "INITIAL_PROGRAM_HYBRID: $INITIAL_PROGRAM_HYBRID"
-echo "SW_UPDATE:              $SW_UPDATE"
-
-if [ -z "$2" ]; then
-	SW_PACKAGE_FILE=$DEFAULT_SW_PACKAGE_FILE
-else
-	SW_PACKAGE_FILE=$2
+# Check path
+if [ ! -f "$swupdate_package" ]; then
+	echo "ERROR: package $swupdate_package not found!"
+	exit 1
 fi
-echo "SW_PACKAGE_FILE: $SW_PACKAGE_FILE"
 
-unpack_package
-if [ "$SW_UPDATE" = true ]; then
-	echo "updating current"
-elif [ "$INITIAL_PROGRAM_EMMC" = true ]; then
-	echo "initial programming emmc"
-elif [ "$INITIAL_PROGRAM_HYBRID" = true ]; then
-	echo "initial programming hybrid"
-else
-	logger -s "error: $0 no action"
-fi
-set_up_device_names
-set_up_image_names
-echo $APPPACK_IMG
-echo $BOOTCTRL_IMG
-echo $FIP_IMG
-echo $KERNEL_IMG
-echo $ROOTFS_IMG
+# Unpack swupdate package
+unpack_package $swupdate_package
 
-if [ "$SW_UPDATE" = true ]; then
-	program_inactive_partitions
-	logger -s "SW updated is completed for $TARGET_DEV_ID"
-elif [ "$INITIAL_PROGRAM_EMMC" = true ]; then
-	program_all_partitions
-	logger -s "initial programming is completed for emmc"
-elif [ "$INITIAL_PROGRAM_HYBRID" = true ]; then
-	program_all_partitions
-	logger -s "initial programming is completed for hybrid (flash/emmc)"
-fi
+# Program required target
+case $target in
+	initemmc)
+		echo "Programming eMMC..."
+		program_emmc
+		;;
+	inithybrid)
+		echo "Programming eMMC..."
+		program_emmc
+		echo
+		echo "Programming QSPI flash..."
+		program_qspi
+		;;
+	update)
+		echo "Updating inactive partitions..."
+		update_boot_dev
+		echo
+		echo "Programming App-Pack..."
+		program_app_pack
+		;;
+esac
+
 sync
 
+echo
+exit 0
