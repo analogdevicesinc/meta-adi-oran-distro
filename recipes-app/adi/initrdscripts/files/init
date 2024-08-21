@@ -1,5 +1,7 @@
 #!/bin/sh
 
+EXT4_GUID="0FC63DAF-8483-4772-8E79-3D69D8477DE4"
+
 ROOT="/mnt/.root"
 METADATA="/mnt/.meta"
 MAPPER_NAME=rootfs
@@ -76,6 +78,7 @@ fi;
 # Get the active boot device and boot slot from the device tree 'chosen' node
 BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device)
 BOOT_SLOT=$(cat /proc/device-tree/chosen/boot/slot)
+BOOT_PLAT=$(tr -d '\0' < /proc/device-tree/chosen/boot/plat)
 echo "Active boot device: ${BOOT_DEV_ID}"
 echo "Active boot slot: ${BOOT_SLOT}"
 
@@ -102,9 +105,9 @@ ROOTFS_PART=${ROOTFS_DEV}p${ROOTFS_PART_NUM}
 # Find and source the rootfs configuration file
 if [ ! -f /etc/rootfs-cfg.env ]
 then
-	echo "/etc/rootfs-cfg.env is missing"
-	echo 1 > /sys/kernel/err/reset_cause
-	reboot -f now
+    echo "/etc/rootfs-cfg.env is missing"
+    echo 1 > /sys/kernel/err/reset_cause
+    reboot -f now
 fi
 source /etc/rootfs-cfg.env
 
@@ -112,20 +115,6 @@ source /etc/rootfs-cfg.env
 HASH_OFFSET=$DATA_SIZE
 FEC_OFFSET=0
 [ "$FEC_ENABLED" -ne 0 ] && FEC_OFFSET=$((HASH_OFFSET+HASH_SIZE))
-
-# TODO: Enable this if/when dynamic creation/resizing of data partition is to be supported
-#DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " data$" | tr -s " " " " | cut -d' ' -f2)
-#if [ -z "$DATA_PART_NUM" ]
-#then
-#    echo "Creating 'data' partition on $ROOTFS_DEV..."
-#    sgdisk -e $ROOTFS_DEV
-#    DATA_PART_START=$(sgdisk -F $ROOTFS_DEV)
-#    DATA_PART_END=$(sgdisk -E $ROOTFS_DEV)
-#    sgdisk --new=0:$DATA_PART_START:$DATA_PART_END $ROOTFS_DEV
-#    DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep $DATA_PART_START | tr -s " " " " | cut -d' ' -f2)
-#    sgdisk --change-name=$DATA_PART_NUM:data $ROOTFS_DEV
-#    mkfs.ext4 $ROOTFS_DEVp$DATA_PART_NUM
-#fi
 
 if [ "$DM_VERITY_ENABLED" -eq 0 ]
 then
@@ -140,18 +129,36 @@ else
     ROOTFS_PART=/dev/mapper/$MAPPER_NAME
 fi
 
-#echo "going to shell... "
-#/bin/sh
+DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " data$" | tr -s " " " " | cut -d' ' -f2)
+DATA_PART="${ROOTFS_DEV}p${DATA_PART_NUM}"
+if [ -n "$DATA_PART_NUM" ]
+then
+    DATA_PART_TYPE=$(sgdisk -i "$DATA_PART_NUM" "$ROOTFS_DEV" | grep "Partition GUID code" | cut -d ':' -f2 | cut -d ' ' -f2)
+
+    if [ "$DATA_PART_TYPE" != "$EXT4_GUID" ]
+    then
+        if [ "$BOOT_PLAT" == "asic" ]
+        then
+            echo "Expanding data partition to fill disk..."
+            sgdisk -e \
+                    -d "$DATA_PART_NUM" \
+                    -n "$DATA_PART_NUM:0:0" \
+                    -c "$DATA_PART_NUM:data" \
+                "$ROOTFS_DEV"
+        fi
+        echo "Creating EXT4 filesystem on data partition..."
+        mkfs.ext4 -F -L data "$DATA_PART"
+        sgdisk -t "$DATA_PART_NUM:$EXT4_GUID" "$ROOTFS_DEV"
+    fi
+fi
 
 echo "Mounting rootfs on ${ROOTFS_PART}..."
 [ -d ${ROOT} ] || mkdir -p ${ROOT}
 mount ${ROOTFS_PART} ${ROOT}
 
 # Mount the data partition
-DATA_PART_NUM=$(gdisk -l $ROOTFS_DEV | grep " data$" | tr -s " " " " | cut -d' ' -f2)
 if [ -n "$DATA_PART_NUM" ]
 then
-    DATA_PART=${ROOTFS_DEV}p${DATA_PART_NUM}
     echo "Mounting data partition on ${DATA_PART}..."
     mount -o noexec,nosuid,nodev "${DATA_PART}" "${ROOT}/data/active"
 else

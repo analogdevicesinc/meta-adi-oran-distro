@@ -33,6 +33,6 @@ part --source rawcopy --sourceparams="file=${ROOTFS_IMAGE_DIR}/${DM_VERITY_IMAGE
 part --source rawcopy --sourceparams="file=${ROOTFS_IMAGE_DIR}/${DM_VERITY_IMAGE}-${MACHINE}.ext4.verity" --part-name ${ROOTFS_PART_NAME}_b --fixed-size ${ROOTFS_PART_SIZE} --align ${PART_ALIGNMENT}
 
 #11. User data partition
-part rootfs/data --fstype=ext4 --part-name ${DATA_PART_NAME} --fixed-size ${DATA_PART_SIZE} --align ${PART_ALIGNMENT}
+part rootfs/data --part-name ${DATA_PART_NAME} --fixed-size ${DATA_PART_SIZE} --align ${PART_ALIGNMENT}
 
 bootloader --ptable gpt

@@ -52,6 +52,7 @@ PACKAGE_INSTALL:append = " coreutils"
 PACKAGE_INSTALL:append = " ppp"
 PACKAGE_INSTALL:append = " jitterentropy"
 PACKAGE_INSTALL:append = " dropbear"
+PACKAGE_INSTALL:append = " e2fsprogs"
 
 # For use on secondary tile:
 # 1) Disable root login
