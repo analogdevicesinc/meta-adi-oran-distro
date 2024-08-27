@@ -14,4 +14,11 @@ require adrv906x-sd-wic.inc
 # Add adi wic tools to SDK
 TOOLCHAIN_HOST_TASK:append = " nativesdk-adi-wic"
 
+# Add SDK dependencies for RAS application development
+TOOLCHAIN_HOST_TASK:append = " nativesdk-python3-pip"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-mscgen"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-doxygen"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-graphviz"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-ninja"
+
 do_image_wic[depends] += " adrv906x-flash-image:do_rootfs"
