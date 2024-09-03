@@ -69,7 +69,7 @@ IMAGE_DATA_PART_FILES = " \
     /etc/adjtime \
     "
 IMAGE_DATA_PART_FILES_WITH_DFLTS = " \
-    /etc/dropbear/keys \
+    /etc/ssh/keys \
     /etc/network/interfaces \
     /var/lib \
     /etc/syslog.conf \

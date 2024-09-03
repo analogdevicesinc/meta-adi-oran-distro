@@ -16,7 +16,7 @@ RDEPENDS:${PN} = " \
 	ppp \
 	jitterentropy \
 	iproute2 \
-	dropbear \
+	openssh \
 	adrv906x-files \
 	data-partition \
 	os-release \
