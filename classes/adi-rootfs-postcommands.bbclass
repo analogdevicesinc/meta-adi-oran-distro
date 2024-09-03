@@ -37,11 +37,15 @@ adi_data_partition_hook () {
 	setting=`echo $security_policy_settings | cut -d ';' -f1`
 	remaining=`echo $security_policy_settings | cut -d ';' -f2-`
 	while test "x$setting" != "x"; do
-		file=`echo $setting | cut -d ' ' -f1`
-		chmod_opts=`echo $setting | cut -d ' ' -f2`
-		chown_opts=`echo $setting | cut -d ' ' -f3`
-		chmod $chmod_opts ${IMAGE_ROOTFS}/$file
-		chown $chown_opts ${IMAGE_ROOTFS}/$file
+		file=`echo $setting | cut -d ',' -f1`
+		chmod_opts=`echo $setting | cut -d ',' -f2`
+		chown_opts=`echo $setting | cut -d ',' -f3`
+		if [ ! -z "$chmod_opts" ]; then
+			chmod $chmod_opts ${IMAGE_ROOTFS}/$file
+		fi
+		if [ ! -z "$chown_opts" ]; then
+			chown $chown_opts ${IMAGE_ROOTFS}/$file
+		fi
 		# Avoid infinite loop if the last parameter doesn't end with ';'
 		if [ "$setting" = "$remaining" ]; then
 			break

@@ -77,6 +77,7 @@ IMAGE_DATA_PART_FILES_WITH_DFLTS = " \
     /etc/logrotate.conf \
     /etc/logrotate-dmesg.conf \
     /etc/logrotate.d \
+    /opt/adi/adrv906x/bin/adrv906x-serdes/supervise \
     "
 
 # Example to add service:
