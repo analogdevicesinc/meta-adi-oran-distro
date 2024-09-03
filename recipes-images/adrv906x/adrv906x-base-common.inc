@@ -21,4 +21,7 @@ TOOLCHAIN_HOST_TASK:append = " nativesdk-doxygen"
 TOOLCHAIN_HOST_TASK:append = " nativesdk-graphviz"
 TOOLCHAIN_HOST_TASK:append = " nativesdk-ninja"
 
+# Add openssl to SDK for Ed25519 key creation and signing
+TOOLCHAIN_HOST_TASK:append = " nativesdk-openssl"
+
 do_image_wic[depends] += " adrv906x-flash-image:do_rootfs"
