@@ -1,0 +1,1 @@
+export FONTCONFIG_PATH="$OECORE_NATIVE_SYSROOT/etc/fonts"
