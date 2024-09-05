@@ -138,6 +138,7 @@ def print_configs(json, fdt_secondary_name):
         print_parameter(config, IND_12 + 'fdt = \"%s\";', 'dtb')
         print(IND_12 + 'fdt-secondary = \"%s\";' % fdt_secondary_name)
         print_parameter(config, IND_12 + 'ramdisk = \"%s\";', 'ramdisk')
+        print(IND_12 + "%s" % anti_rollback_version_line)
         print(IND_12 + 'hash-1 {')
         print_parameter(config, IND_16 + 'algo = \"%s\";', 'hash_algo')
         print(IND_12 + '};')
@@ -172,6 +173,14 @@ if ret.returncode != 0:
     print("Cannot dumpimage -l %s" % fit_image)
     sys.exit(1)
 data =  ret.stdout
+
+# Run 'dtc -O dts' to obtain 'anti_rollback_version' line
+ret = subprocess.run("dtc -O dts %s" % fit_image, shell=True, capture_output=True, text=True)
+if ret.returncode != 0:
+    print("Cannot dtc -O dts %s" % fit_image)
+    sys.exit(1)
+data2 =  ret.stdout
+anti_rollback_version_line = re.search('(anti-rollback-version = .*)', data2).group(1)
 
 # Gather single variables
 fit_description       = re.search('(?<=FIT description: ).*', data).group(0)
