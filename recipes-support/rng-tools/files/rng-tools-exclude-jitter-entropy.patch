@@ -1,0 +1,5 @@
+--- a/default	2024-09-12 12:14:17.308643638 -0400
++++ b/default	2024-09-12 12:14:28.192573660 -0400
+@@ -1 +1 @@
+-EXTRA_ARGS="-r /dev/hwrng"
++EXTRA_ARGS="-r /dev/hwrng -x jitter"

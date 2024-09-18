@@ -8,6 +8,9 @@ MAPPER_NAME=rootfs
 
 echo "Starting /init on initramfs..."
 
+# Pet watchdog
+echo '\0' > /dev/watchdog
+
 # mount temporary filesystems
 mount -n -t devtmpfs devtmpfs /dev
 mount -n -t proc     proc     /proc
