@@ -62,6 +62,22 @@ adi_data_partition_hook () {
 		ln -s /data/active${item} ${IMAGE_ROOTFS}/${item}
 	done
 
+	IMAGE_DATA_PART_EXTRA_DIRS_PATHS=""
+	for item in `echo ${IMAGE_DATA_PART_EXTRA_DIRS}`
+	do
+		dir=`echo $item | cut -d ',' -f1`
+		chmod_opts=`echo $item | cut -d ',' -f2`
+		chown_opts=`echo $item | cut -d ',' -f3`
+		mkdir -p "${IMAGE_ROOTFS}/data/defaults/${dir}"
+		if [ ! -z "$chmod_opts" ]; then
+			chmod -R $chmod_opts ${IMAGE_ROOTFS}/data/defaults/${dir}
+		fi
+		if [ ! -z "$chown_opts" ]; then
+			chown -R $chown_opts ${IMAGE_ROOTFS}/data/defaults/${dir}
+		fi
+		IMAGE_DATA_PART_EXTRA_DIRS_PATHS="$IMAGE_DATA_PART_EXTRA_DIRS_PATHS $dir"
+	done
+
 	# For items with default values:
 	# 1) Copy default to /data/defaults
 	# 2) Create symlinks from rootfs to data partition
@@ -73,7 +89,7 @@ adi_data_partition_hook () {
 		rm -rf ${IMAGE_ROOTFS}/${item}
 		ln -s /data/active${item} ${IMAGE_ROOTFS}/${item}
 	done
-	sed -i 's@FILES_TO_COPY=""@FILES_TO_COPY="'"${IMAGE_DATA_PART_FILES_WITH_DFLTS}"'"@g' ${IMAGE_ROOTFS}/etc/init.d/data-partition.sh
+	sed -i 's@FILES_TO_COPY=""@FILES_TO_COPY="'"${IMAGE_DATA_PART_FILES_WITH_DFLTS} ${IMAGE_DATA_PART_EXTRA_DIRS_PATHS}"'"@g' ${IMAGE_ROOTFS}/etc/init.d/data-partition.sh
 	sed -i 's@  *@ @g' ${IMAGE_ROOTFS}/etc/init.d/data-partition.sh
 }
 

@@ -1,0 +1,16 @@
+software =
+{
+	version = "@@DISTRO_VERSION@@";
+	description = "Software and firmware update package for @@MACHINE@@";
+	@@MACHINE@@ = {
+		hardware-compatibility: [ "0" ];
+		images: (
+			{
+				filename = "@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity";
+				device = "/dev/mmcblk1";
+				volume = "rootfs_a";
+				type = "gptpart";
+			}
+		);
+	};
+}

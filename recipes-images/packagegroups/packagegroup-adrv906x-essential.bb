@@ -20,4 +20,8 @@ RDEPENDS:${PN} = " \
 	adrv906x-files \
 	data-partition \
 	os-release \
+	swupdate \
+	swupdate-lua \
+	swupdate-client \
+	swupdate-progress \
 	"

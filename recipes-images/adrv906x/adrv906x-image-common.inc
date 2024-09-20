@@ -80,6 +80,12 @@ IMAGE_DATA_PART_FILES_WITH_DFLTS = " \
     /etc/logrotate.d \
     "
 
+# the software update process deals with large files -- too large for tmpfs.
+# those files will need a temporary location in the data part.
+IMAGE_DATA_PART_EXTRA_DIRS = " \
+    /update,777 \
+"
+
 # Example to add service:
 # IMAGE_INSTALL:append = " example_service"
 # IMAGE_DATA_PART_FILES_WITH_DFLTS:append = " /usr/local/bin/service/example_service/supervise"
