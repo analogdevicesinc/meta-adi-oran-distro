@@ -1,8 +1,5 @@
-SUMMARY = "ADRV906x nor flash image w/o jtag enabled"
+SUMMARY = "ADRV906x nor flash image"
 LICENSE = "MIT"
-
-# create `adrv906x-flash-image` will also create `adrv906x-flash-jtag-image`
-DEPENDS:append = " adrv906x-flash-jtag-image"
 
 require adrv906x-flash-common.inc
 

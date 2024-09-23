@@ -1,12 +1,10 @@
-SUMMARY = "ADRV906x base sd image w/o jtag enabled"
+SUMMARY = "ADRV906x base sd image"
 LICENSE = "MIT"
 
-# create `adrv906x-base-image` will also create `adrv906x-base-jtag-image`
-DEPENDS:append = " adrv906x-base-jtag-image"
+# create `adrv906x-base-image` will also create `adrv906x-flash-image`
+DEPENDS:append = " adrv906x-flash-image"
 
 require adrv906x-base-common.inc
 
-ROOTFS_IMAGE_DIR ?= "${RECIPE_SYSROOT}/dm-verity"
+ROOTFS_IMAGE_DIR ?= "${IMGDEPLOYDIR}"
 APP_PACK_IMAGE ?= "app_pack.bin"
-
-do_image_wic[depends] += " adrv906x-base-jtag-image:do_populate_sysroot"

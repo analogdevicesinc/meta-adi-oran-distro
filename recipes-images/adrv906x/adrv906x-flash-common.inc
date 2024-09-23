@@ -5,4 +5,4 @@ WKS_FILE = "adrv906x-flash.wks.in"
 
 #build flash image
 require adrv906x-flash-wic.inc
-do_rm_work[depends] = " adrv906x-base-jtag-image:do_image_wic"
+do_rm_work[depends] = " adrv906x-base-image:do_image_wic"
