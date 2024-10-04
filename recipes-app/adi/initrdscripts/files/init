@@ -78,6 +78,29 @@ then
     done
 fi;
 
+# If the NFS config file is present and NFS boot is enabled,
+# mount the rootfs via NFS and the data partition from a tmpfs
+if [ -f /etc/nfs-cfg.env ]
+then
+    source /etc/nfs-cfg.env
+    if [ "${NFS_ENABLED}" -eq 1 ]
+    then
+        NFS_MOUNT_OPTS=vers=3,rsize=4096,wsize=4096,namlen=255,hard,nolock,proto=tcp,timeo=600,retrans=2,sec=sys,mountvers=3,mountproto=tcp,local_lock=all
+        ifconfig "$NFS_INTF" "$NFS_LCL_IP_ADDR"
+        /etc/init.d/rpcbind start
+        /etc/init.d/nfscommon start
+        NFS_ROOT_PART="${NFS_HOST_IP_ADDR}:${NFS_SHARE_PATH}"
+        echo "Mounting rootfs on ${NFS_ROOT_PART}..."
+        [ -d ${ROOT} ] || mkdir -p ${ROOT}
+        mount -t nfs -o ro -o "${NFS_MOUNT_OPTS}" "${NFS_ROOT_PART}" "${ROOT}"
+        echo "Mounting data partition on tmpfs..."
+        mount -n -t tmpfs tmpfs "${ROOT}/data/active"
+        echo "Switching to rootfs..."
+        cd ${ROOT} || exit 1
+        exec switch_root . "/init" "$@"
+    fi
+fi
+
 # Get the active boot device and boot slot from the device tree 'chosen' node
 BOOT_DEV_ID=$(cat /proc/device-tree/chosen/boot/device)
 BOOT_SLOT=$(cat /proc/device-tree/chosen/boot/slot)

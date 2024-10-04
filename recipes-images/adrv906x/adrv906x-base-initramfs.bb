@@ -47,6 +47,10 @@ IMAGE_FEATURES:append = " ${@bb.utils.contains('ADI_CC_BOOT_DEBUG','1','${ADI_IN
 ADI_INITRAMFS_DEBUG_EXTRA_FEATURES = "debug-tweaks"
 EXTRA_IMAGE_FEATURES:append = " ${@bb.utils.contains('ADI_CC_BOOT_DEBUG','1','${ADI_INITRAMFS_DEBUG_EXTRA_FEATURES}','', d)}"
 
+# Packages for debug
+ADI_INITRAMFS_DEBUG_PACKAGES = "nfs-rootfs"
+PACKAGE_INSTALL:append = " ${@bb.utils.contains('ADI_CC_BOOT_DEBUG','1','${ADI_INITRAMFS_DEBUG_PACKAGES}','', d)}"
+
 # Setup SSH server on the secondary
 PACKAGE_INSTALL:append = " coreutils"
 PACKAGE_INSTALL:append = " ppp"
