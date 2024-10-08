@@ -42,4 +42,11 @@ verity_setup() {
     FEC_SIZE=$(stat --printf="%s" rootfs.fec)
     cat verity_output.txt | process_verity
     cat rootfs.$TYPE rootfs.hash rootfs.fec > $OUTPUT
+    rm rootfs.$TYPE rootfs.hash rootfs.fec verity_output.txt
+}
+
+python __anonymous() {
+    # create a compressed version of the rootfs as well. this is useful for swupdate.
+    verity_type = d.getVar('DM_VERITY_IMAGE_TYPE')
+    d.appendVar('IMAGE_FSTYPES', ' %s.verity.gz' % verity_type)
 }

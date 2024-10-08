@@ -3,13 +3,7 @@ do_image_wic[depends] += " bootctrl:do_deploy debug-app-pack:do_install app-pack
 WKS_FILE_DEPENDS = " parted-native virtual/bootloader virtual/kernel"
 IMAGE_FSTYPES:append = " wic wic.gz"
 
-BOOTCTRL_PART_NAME?="bootctrl"
-BOOTCFG_PART_NAME?="bootcfg"
-BOOT_PART_NAME?="boot"
-FIP_PART_NAME?="fip"
-KERNEL_PART_NAME?="kernel"
-ROOTFS_PART_NAME?="rootfs"
-DATA_PART_NAME?="data"
+require adrv906x-partitions.inc
 
 WIC_CREATE_EXTRA_ARGS:append = " -i adi-direct"
 WICVARS:append = " IMAGE_TOTAL_SIZE"

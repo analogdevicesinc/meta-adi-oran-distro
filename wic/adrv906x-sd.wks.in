@@ -9,7 +9,7 @@ part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/bootctrl_cfg.bin"
 part --source empty --part-name ${BOOTCFG_PART_NAME} --fixed-size ${BOOTCFG_PART_SIZE} --align ${PART_ALIGNMENT}
 
 #3. boot partition(boot_a)
-part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_a --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_a --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
 
 #4. fip partition(fip_a)
 part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name ${FIP_PART_NAME}_a --fixed-size ${FIP_PART_SIZE} --align ${PART_ALIGNMENT}
@@ -18,7 +18,7 @@ part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-n
 part --source bootimg-partition --fstype=ext4 --part-name ${KERNEL_PART_NAME}_a --label ${KERNEL_PART_NAME}_a --active --fixed-size ${KERNEL_PART_SIZE} --align ${PART_ALIGNMENT}
 
 #6. boot partition(boot_b)
-part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_b --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${APP_PACK_IMAGE}" --part-name ${BOOT_PART_NAME}_b --fixed-size ${BOOT_PART_SIZE} --align ${PART_ALIGNMENT}
 
 #7. fip partition(fip_b)
 part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/fip.bin" --part-name ${FIP_PART_NAME}_b --fixed-size ${FIP_PART_SIZE} --align ${PART_ALIGNMENT}

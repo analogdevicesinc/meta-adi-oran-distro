@@ -6,10 +6,34 @@ software =
 		hardware-compatibility: [ "0" ];
 		images: (
 			{
-				filename = "@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity";
+				filename = "@@APP_PACK_IMAGE@@";
 				device = "/dev/mmcblk1";
-				volume = "rootfs_a";
+				volume = "@@BOOT_PART_NAME@@_a";
 				type = "gptpart";
+				installed-directly = true;
+			},
+			{
+				filename = "fip.bin";
+				device = "/dev/mmcblk1";
+				volume = "@@FIP_PART_NAME@@_a";
+				type = "gptpart";
+				installed-directly = true;
+			},
+			{
+				filename = "@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity.gz";
+				device = "/dev/mmcblk1";
+				volume = "@@ROOTFS_PART_NAME@@_a";
+				type = "gptpart";
+				compressed = "zlib";
+				installed-directly = true;
+			}
+		);
+		files: (
+			{
+				filename = "fitImage-@@INITRAMFS_IMAGE@@-@@MACHINE@@-@@MACHINE@@";
+				path = "/kernel_fit.itb";
+				filesystem = "ext4"
+				device = "/dev/mmcblk1p5";
 			}
 		);
 	};

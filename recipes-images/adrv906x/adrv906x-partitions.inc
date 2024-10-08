@@ -1,0 +1,7 @@
+BOOTCTRL_PART_NAME?="bootctrl"
+BOOTCFG_PART_NAME?="bootcfg"
+BOOT_PART_NAME?="boot"
+FIP_PART_NAME?="fip"
+KERNEL_PART_NAME?="kernel"
+ROOTFS_PART_NAME?="rootfs"
+DATA_PART_NAME?="data"

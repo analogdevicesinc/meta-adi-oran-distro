@@ -3,10 +3,10 @@
 
 
 #1. boot partition(boot_a)
-part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_A_PART_OFFSET}
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_A_PART_OFFSET}
 
 #2. boot partition(boot_b)
-part --source rawcopy --sourceparams="file=${DEPLOY_DIR}/app-pack/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_B_PART_OFFSET}
+part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${APP_PACK_IMAGE}" --fixed-size ${BOOT_PART_SIZE} --offset ${BOOT_B_PART_OFFSET}
 
 #3. bootctrl
 part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/bootctrl_cfg.bin" --fixed-size ${BOOTCTRL_PART_SIZE}  --offset ${BOOTCTRL_PART_OFFSET}
