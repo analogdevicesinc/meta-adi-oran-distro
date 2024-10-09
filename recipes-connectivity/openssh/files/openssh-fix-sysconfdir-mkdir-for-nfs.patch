@@ -1,0 +1,11 @@
+--- a/init	2024-10-09 08:21:19.136301579 -0400
++++ b/init	2024-10-09 08:21:34.008215889 -0400
+@@ -17,7 +17,7 @@
+ fi
+ 
+ [ -z "$SYSCONFDIR" ] && SYSCONFDIR=/etc/ssh
+-mkdir -p $SYSCONFDIR
++[ -d $SYSCONFDIR ] || mkdir -p $SYSCONFDIR
+ 
+ check_for_no_start() {
+     # forget it if we're trying to start, and /etc/ssh/sshd_not_to_be_run exists
