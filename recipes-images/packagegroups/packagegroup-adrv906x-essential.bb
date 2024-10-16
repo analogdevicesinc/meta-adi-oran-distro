@@ -22,6 +22,4 @@ RDEPENDS:${PN} = " \
 	os-release \
 	swupdate \
 	swupdate-lua \
-	swupdate-client \
-	swupdate-progress \
 	"

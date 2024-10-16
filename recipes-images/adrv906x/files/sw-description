@@ -2,38 +2,131 @@ software =
 {
 	version = "@@DISTRO_VERSION@@";
 	description = "Software and firmware update package for @@MACHINE@@";
+	embedded-script = "
+	function sanitize(s)
+		-- remove characters outside the printable ASCII range, trim whitespace from both ends
+		return s:gsub('[^ -~]+', ''):gsub('^%s+', ''):gsub('%s+$', '')
+	end
+
+	function get_anti_rollback_version()
+		local anti_rollback = sanitize(io.open([[/etc/anti-rollback-version]]):read())
+		return tonumber(anti_rollback, 10) or 0
+	end
+
+	function get_boot_device_id()
+		return sanitize(io.open([[/proc/device-tree/chosen/boot/device]]):read())
+	end
+
+	function get_boot_device(boot_device_id)
+		local boot_devices = {
+			emmc0 = [[/dev/mmcblk0]],
+			sd0 = [[/dev/mmcblk1]],
+			qspi0 = [[/dev/mtd]],
+		}
+		return boot_devices[boot_device_id]
+	end
+
+	function get_installation_slot()
+		-- check current running slot, return the other one (we will install into inactive slot)
+		local current_slot = sanitize(io.open([[/proc/device-tree/chosen/boot/slot]]):read())
+		return (current_slot == [[a]] and [[b]] or [[a]])
+	end
+
+	function get_partition_device(boot_device, partition_name)
+		local cmd = [[gdisk -l \"]] .. boot_device .. [[\"]]
+		cmd = cmd .. [[ | grep \"]] .. partition_name .. [[\"]]
+		cmd = cmd .. [[ | awk '{print $1;}']]
+		if boot_device == [[/dev/mtd]] then
+			cmd = [[grep \"]] .. part_name .. [[\" /proc/mtd | cut -d \":\" -f1 | cut -b 4-]]
+		end
+		local idx = sanitize(io.popen(cmd):read())
+		if boot_device == [[/dev/mtd]] then
+			return boot_device .. idx
+		end
+		return boot_device .. [[p]] .. idx
+	end
+
+	current_rollback_version = get_anti_rollback_version()
+	maximum_rollback_version = @@ANTI_ROLLBACK_VERSION@@
+	boot_device_id = get_boot_device_id()
+
+	if current_rollback_version > maximum_rollback_version then
+		swupdate.error([[Anti-rollback check failed (current: ]] .. current_rollback_version .. [[, maximum: ]] .. maximum_rollback_version .. [[)]])
+		error([[Anti-rollback check failed]])
+	end
+
+	function image_handler(image)
+		image.device = get_boot_device(boot_device_id)
+		local partition = image.volume .. [[_]] .. get_installation_slot()
+		if boot_device_id == [[qspi0]] then
+			if image.volume == [[rootfs]] then
+				-- hybrid boot mode, rootfs is on eMMC
+				image.device = get_boot_device([[emmc0]])
+			else
+				image.device = get_partition_device(image.device, partition)
+				image.volume = nil
+				image.type = [[flash]]
+				return true, image
+			end
+		end
+		image.volume = partition
+		image.type = [[gptpart]]
+		return true, image
+	end
+
+	function file_handler(image)
+		local boot_device = get_boot_device(boot_device_id)
+		image.volume = image.volume .. [[_]] .. get_installation_slot()
+		image.device = get_partition_device(boot_device, image.volume)
+		image.filesystem = [[ext4]]
+		image.volume = nil
+		return true, image
+	end
+	"
 	@@MACHINE@@ = {
-		hardware-compatibility: [ "0" ];
+		hardware-compatibility: [ "@@HWREV@@" ];
 		images: (
 			{
 				filename = "@@APP_PACK_IMAGE@@";
-				device = "/dev/mmcblk1";
-				volume = "@@BOOT_PART_NAME@@_a";
-				type = "gptpart";
+				sha256 = "$swupdate_get_sha256(@@APP_PACK_IMAGE@@)";
+				volume = "@@BOOT_PART_NAME@@";
+				hook = "image_handler";
+				install-if-different = true;
 				installed-directly = true;
 			},
 			{
 				filename = "fip.bin";
-				device = "/dev/mmcblk1";
-				volume = "@@FIP_PART_NAME@@_a";
-				type = "gptpart";
+				sha256 = "$swupdate_get_sha256(fip.bin)";
+				volume = "@@FIP_PART_NAME@@";
+				hook = "image_handler";
+				install-if-different = true;
 				installed-directly = true;
 			},
 			{
 				filename = "@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity.gz";
-				device = "/dev/mmcblk1";
-				volume = "@@ROOTFS_PART_NAME@@_a";
-				type = "gptpart";
+				sha256 = "$swupdate_get_sha256(@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity.gz)";
+				volume = "@@ROOTFS_PART_NAME@@";
+				hook = "image_handler";
 				compressed = "zlib";
+				install-if-different = true;
 				installed-directly = true;
 			}
 		);
 		files: (
 			{
 				filename = "fitImage-@@INITRAMFS_IMAGE@@-@@MACHINE@@-@@MACHINE@@";
+				sha256 = "$swupdate_get_sha256(fitImage-@@INITRAMFS_IMAGE@@-@@MACHINE@@-@@MACHINE@@)";
 				path = "/kernel_fit.itb";
-				filesystem = "ext4"
-				device = "/dev/mmcblk1p5";
+				volume = "@@KERNEL_PART_NAME@@";
+				hook = "file_handler";
+				install-if-different = true;
+			}
+		);
+		scripts: (
+			{
+				filename = "update-slot.sh";
+				type = "postinstall";
+				sha256 = "$swupdate_get_sha256(update-slot.sh)";
 			}
 		);
 	};
