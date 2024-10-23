@@ -1,5 +1,6 @@
 IMAGE_FEATURES[validitems] += "data-partition"
 IMAGE_PREPROCESS_COMMAND += '${@bb.utils.contains("IMAGE_FEATURES", "data-partition", "adi_data_partition_hook; ", "",d)}'
+IMAGE_PREPROCESS_COMMAND:append = " adi_executable_setcap;"
 
 #
 # A hook function to support the data-partition image feature
@@ -91,5 +92,25 @@ adi_data_partition_hook () {
 	done
 	sed -i 's@FILES_TO_COPY=""@FILES_TO_COPY="'"${IMAGE_DATA_PART_FILES_WITH_DFLTS} ${IMAGE_DATA_PART_EXTRA_DIRS_PATHS}"'"@g' ${IMAGE_ROOTFS}/etc/init.d/data-partition.sh
 	sed -i 's@  *@ @g' ${IMAGE_ROOTFS}/etc/init.d/data-partition.sh
+}
+
+#
+# A hook to allow package recipes to configure capabilities for executables.
+#
+# The format of IMAGE_EXEC_CAPS is "<bin>,<caps>". I.e.,
+# IMAGE_EXEC_CAPS = " \
+#	/bin/ping,cap_net_raw+ep  \
+# "
+#
+DEPENDS:append = " libcap-native"
+IMAGE_EXEC_CAPS = ""
+adi_executable_setcap () {
+	for entry in $(echo ${IMAGE_EXEC_CAPS})
+	do
+		local exe=`echo $entry | cut -d ',' -f1`
+		local caps=`echo $entry | cut -d ',' -f2-`
+
+		setcap "$caps" "${IMAGE_ROOTFS}$exe"
+	done
 }
 
