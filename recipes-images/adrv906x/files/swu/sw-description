@@ -1,5 +1,4 @@
-software =
-{
+software: {
 	version = "@@DISTRO_VERSION@@";
 	description = "Software and firmware update package for @@MACHINE@@";
 	embedded-script = "
@@ -37,7 +36,7 @@ software =
 		cmd = cmd .. [[ | grep \"]] .. partition_name .. [[\"]]
 		cmd = cmd .. [[ | awk '{print $1;}']]
 		if boot_device == [[/dev/mtd]] then
-			cmd = [[grep \"]] .. part_name .. [[\" /proc/mtd | cut -d \":\" -f1 | cut -b 4-]]
+			cmd = [[grep \"]] .. partition_name .. [[\" /proc/mtd | cut -d \":\" -f1 | cut -b 4-]]
 		end
 		local idx = sanitize(io.popen(cmd):read())
 		if boot_device == [[/dev/mtd]] then
@@ -56,6 +55,10 @@ software =
 	end
 
 	function image_handler(image)
+		if image.volume == [[@@KERNEL_PART_NAME@@]] and boot_device_id ~= [[qspi0]] then
+			swupdate.error([[Installing in flash mode is only supported when booting from flash. Re-run with '--select=@@MACHINE@@'.]])
+			error([[Invalid boot device]])
+		end
 		image.device = get_boot_device(boot_device_id)
 		local partition = image.volume .. [[_]] .. get_installation_slot()
 		if boot_device_id == [[qspi0]] then
@@ -75,6 +78,10 @@ software =
 	end
 
 	function file_handler(image)
+		if image.volume == [[@@KERNEL_PART_NAME@@]] and boot_device_id == [[qspi0]] then
+			swupdate.error([[When booting from flash, one must specify flash mode during installation. Re-run with '--select=@@MACHINE@@,flash'.]])
+			error([[Invalid boot device]])
+		end
 		local boot_device = get_boot_device(boot_device_id)
 		image.volume = image.volume .. [[_]] .. get_installation_slot()
 		image.device = get_partition_device(boot_device, image.volume)
@@ -82,18 +89,47 @@ software =
 		image.volume = nil
 		return true, image
 	end
-	"
-	@@MACHINE@@ = {
-		hardware-compatibility: [ "@@HWREV@@" ];
+	";
+	@@MACHINE@@: {
+		hardware-compatibility: [ "#RE:^\S*$" ];
+		flash: {
+			images: (
+				{
+					filename = "fip.bin";
+					sha256 = "$swupdate_get_sha256(fip.bin)";
+					volume = "@@FIP_PART_NAME@@";
+					hook = "image_handler";
+					install-if-different = true;
+					installed-directly = true;
+				},
+				{
+					filename = "@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity.gz";
+					sha256 = "$swupdate_get_sha256(@@DM_VERITY_IMAGE@@-@@MACHINE@@.ext4.verity.gz)";
+					volume = "@@ROOTFS_PART_NAME@@";
+					hook = "image_handler";
+					compressed = "zlib";
+					install-if-different = true;
+					installed-directly = true;
+				},
+				{
+					filename = "fitImage-@@INITRAMFS_IMAGE@@-@@MACHINE@@-@@MACHINE@@";
+					sha256 = "$swupdate_get_sha256(fitImage-@@INITRAMFS_IMAGE@@-@@MACHINE@@-@@MACHINE@@)";
+					volume = "@@KERNEL_PART_NAME@@";
+					hook = "image_handler";
+					install-if-different = true;
+					installed-directly = true;
+				}
+			);
+			files: ();
+			scripts: (
+				{
+					filename = "update-slot.sh";
+					type = "postinstall";
+					sha256 = "$swupdate_get_sha256(update-slot.sh)";
+				}
+			);
+		};
 		images: (
-			{
-				filename = "@@APP_PACK_IMAGE@@";
-				sha256 = "$swupdate_get_sha256(@@APP_PACK_IMAGE@@)";
-				volume = "@@BOOT_PART_NAME@@";
-				hook = "image_handler";
-				install-if-different = true;
-				installed-directly = true;
-			},
 			{
 				filename = "fip.bin";
 				sha256 = "$swupdate_get_sha256(fip.bin)";
@@ -130,4 +166,4 @@ software =
 			}
 		);
 	};
-}
+};
