@@ -1,0 +1,43 @@
+#!/bin/sh
+
+NAME=cpu_cores_alive
+PIDFILE=/var/run/${NAME}.pid
+DAEMON=/usr/bin/optee_app_alive_request
+DESC="Adrv906x CPU cores alive monitor"
+LOGFILE=/tmp/cpu_cores_alive_log.log
+
+set -e
+
+test -x ${DAEMON} || exit 0
+
+do_start() {
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile ${PIDFILE} \
+		--startas /bin/sh -- -c "${DAEMON} > ${LOGFILE} 2>&1"
+}
+
+do_stop() {
+	start-stop-daemon --stop --quiet --pidfile ${PIDFILE}
+}
+
+case "$1" in
+  start)
+	echo "Starting $DESC"
+	do_start
+	;;
+  stop)
+	echo "Stopping $DESC"
+	do_stop
+	;;
+  restart|force-reload)
+	echo "Restarting $DESC"
+	do_stop
+	sleep 1
+	do_start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
