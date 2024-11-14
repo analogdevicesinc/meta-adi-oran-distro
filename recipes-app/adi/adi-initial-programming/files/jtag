@@ -1,0 +1,7 @@
+restore <path-to-files>/app_pack.bin binary 0x0 
+
+restore <path-to-files>/fip.bin 0x100000 
+
+pause 3000 
+
+memory set 0x20101048 8 0x01 

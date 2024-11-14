@@ -1,0 +1,47 @@
+# Initial Programming of the eMMC/SPI Flash Helper Scripts
+
+This utility contains all of the helper scripts needed for programming of the eMMC/SPI flash for ADI boards. There are four files included, a tftp script, a supervisor script, a JTAG reference script, and a configure file for environment variables. Each of these files is explained in more detail below.
+
+## Supervisor Script (supervisor.sh)
+The supervisor script is the main script used for programming the board. It takes three arguments, the path to the configure file to be used, the UART device name, and the IP address for the board to use during the tftp transfer. It begins by splitting the eMMC/SPI flash images into 256 MB chunks for loading. The script expects eMMC images to be named mmc.dat and SPI flash images to be named nor_flash.dat, and these images to be placed in the tftp folder specified by ADI_TFTP_FOLDER. It then calculates a checksum for each part of the image, to be used by U-boot to ensure no errors in delivery and programming. Once the split files and their checksums have been created, the files are moved into the tftp folder specified by the configure file. If the ADI_TFTP_FILE_OVERRIDE variable is not set and the script sees there are already eMMC/SPI flash images in the tftp folder, it will skip the splitting sequence and use the files already in the folder.
+  
+The supervisor script then attempts to break into the U-boot interactive mode, waiting for the U-boot prompt string for confirmation. Once it has determined that U-boot is in interactive mode, it sets the U-boot environment variables need by the programming command, and then calls the programming command in U-boot.  
+
+Once the U-boot environment has been set and the initial programming command called, the supervisor script waits for the output of the command which it will print to the console before cleaning up any temporary files and exiting. 
+
+## TFTP Installation script (configure_tftp_server.sh)
+The TFTP scripts installs and initializes a tftp server on the host PC. It takes a single argument, the path to the configure.env file to be used. It is configured using the options specified in the configure file, specifically the TFTP folder environment variable. 
+
+Note: This script is optional if there is already a tftp server available on the host PC. In this case, only the tftp folder environment variable will need to be set in order for the supervisor script to populate the tftp server with the image files. 
+
+## JTAG Reference Script (jtag)
+This reference script shows the necessary actions needed for performing a host boot once the boot pins have been set to Host Boot mode. The specific commands in the reference script can be used with ARM Development Studio, once the path to the necessary files has been filled in. However, any other debugger can accomplish the same outcome as long as it has commands to load an image into a location in memory, wait for a selected period of time, and write a bit to an arbitrary memory location. Any debugger that fulfills these requirements will be able to run an adapted script based on the reference script to initiate a Host boot of the system.
+
+## Configure file (configure.env)
+The configure file contains all of the common environment variables needed to run the various scripts in the utility. Their meanings are listed below
+- ADI_SERVER_IP - The IP address of the TFTP server (Host PC)
+- ADI_BURN_EMMC - Enable programming the eMMC as part of the sequence, 1=yes, 0=no
+- ADI_BURN_NOR_FLASH - Enable programming the SPI NOR Flash as part of the sequence, 1=yes, 0=no
+- ADI_TFTP_FOLDER - Full path of the folder used for the tftp server on the host PC
+- ADI_TFTP_PORT - Port to bind to for the tftp server. Default is 69 and should be kept at 69 unless there is another tftp instance running that it would interfere with.
+- ADI_TFTP_FILE_OVERRIDE - Enables overriding any files for the eMMC/SPI flash currently in the tftp folder. By default, the supervisor script will use whatever files are already present in the tftp folder as the eMMC/SPI flash files. Setting this variable will redo the splitting/checksum calculation and replace any files in the tftp folder.
+- ADI_UBOOT_PROMPT_STR - The prompt string that U-boot uses in interactive mode once autoboot has been interrupted, i.e. adrv906x#. This is used by the supervisor script to recognize that it has successfully entered the U-boot interactive mode and can begin programming the eMMC/SPI flash.
+
+## Programming Sequence
+1. Set boot pins on the board to Host Boot mode
+2. Utilize the JTAG reference commands to prepare board for booting
+3. Edit the configure file to adjust any environment variables as needed
+4. Start the supervisor script
+5. Release board out of reset, starting boot process
+6. Wait for the supervisor script to return with results of programming sequence. The supervisor script will handle breaking into U-boot's interactive mode and calling the programming command. 
+7. If needed, repeat steps 1-6 to reprogram the board
+
+## Running in the SDK
+If running from the SDK instead of standalone scripts, the commands will be available as adi_configure_tftp_server and adi_initial_programming_supervisor. To run the configure tftp command, invoke it with `sudo -E $(which configure_tftp_server) -c <path/to/configure/file>`. The supervisor script can be run by invoking `adi_initial_programming_supervisor -c <path/to/configure/file>`. Make sure to source the SDK environment before running the commands.
+
+## Notes
+- This utility will only run on Linux PCs
+- If a configure.env is not provided to the scripts, it will look for a configure file in ~/.config/initialprogramming, and fall back to /etc/initialprogramming if if can't find it there.
+- The supervisor script will need to be run either by a user in the dialout group, or as sudo, otherwise the script will not be able to open and use the UART.
+- The TFTP script will only need to be run once on the host PC, or not at all if a tftp server is already present. The JTAG commands and supervisor script will be run for each board programmed in this manner.
+- In the event of an error in a delivery of a chunk or failure in programming a chunk, the programming command will attempt to require and reprogram that specific chunk again. In the event of multiple failures on the same chunk of an image, U-boot will halt the programming sequence and notify the host PC, which the supervisor script will print to the console.

@@ -11,8 +11,10 @@ WKS_FILE = "adrv906x-sd.wks.in"
 # build SD image
 require adrv906x-sd-wic.inc
 
-# Add adi wic tools to SDK
+# Add adi wic and initial programming tools to SDK
 TOOLCHAIN_HOST_TASK:append = " nativesdk-adi-wic"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-adi-initial-programming"
+TOOLCHAIN_HOST_TASK:append = " nativesdk-adi-initial-programming-doc"
 
 # Add SDK dependencies for RAS application development
 TOOLCHAIN_HOST_TASK:append = " nativesdk-python3-pip"
