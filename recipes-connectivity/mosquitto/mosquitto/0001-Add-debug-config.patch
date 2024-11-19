@@ -1,0 +1,19 @@
+From b1a2df1e07e5a5a7752214f9dc5fc145bd8fcb27 Mon Sep 17 00:00:00 2001
+From: Woodrow Barlow <woodrow.barlow@analog.com>
+Date: Wed, 20 Nov 2024 19:34:59 +0000
+Subject: [PATCH] Add debug config
+
+---
+ mosquitto.conf | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/mosquitto.conf b/mosquitto.conf
+index 10b0406..6b2e19f 100644
+--- a/mosquitto.conf
++++ b/mosquitto.conf
+@@ -902,3 +902,5 @@
+ # given multiple times, all of the files from the first instance will be
+ # processed before the next instance. See the man page for examples.
+ #include_dir
++listener 1883
++allow_anonymous true
