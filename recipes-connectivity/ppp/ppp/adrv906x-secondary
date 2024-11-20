@@ -1,0 +1,4 @@
+# Do not ask the remote to authenticate.
+# Must be specified in /etc/ppp/peers to allow pppd to run as non-root.
+noauth
+
