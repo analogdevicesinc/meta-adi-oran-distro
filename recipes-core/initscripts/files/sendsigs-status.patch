@@ -1,0 +1,30 @@
+diff --git a/sendsigs b/sendsigs
+index 15dd4bb76f..f309c434e2 100755
+--- a/sendsigs
++++ b/sendsigs
+@@ -15,11 +15,19 @@
+ 
+ PATH=/sbin:/bin:/usr/sbin:/usr/bin
+ 
+-# Kill all processes.
+-echo "Sending all processes the TERM signal..."
+-killall5 -15
+-sleep 5
+-echo "Sending all processes the KILL signal..."
+-killall5 -9
++case "$1" in
++    status)
++        echo "Info: 'sendsigs status' command skipped" >&2
++        exit 0
++        ;;
++    *)
++        # Kill all processes.
++        echo "Sending all processes the TERM signal..."
++        killall5 -15
++        sleep 5
++        echo "Sending all processes the KILL signal..."
++        killall5 -9
++        ;;
++esac
+ 
+ : exit 0
