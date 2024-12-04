@@ -39,7 +39,7 @@ EXTRA_USERS_PARAMS = "\
     usermod -a -G disk,bootcfg,shutdown swupdate; \
     useradd -M adrv906x_ptp; \
     usermod -L -e 1 -s /sbin/nologin adrv906x_ptp; \
-    usermod -a -G ptp adrv906x_ptp; \
+    usermod -a -G ptp,dialout,spidev adrv906x_ptp; \
     "
 
 # Enable sudo for the adi user. Developer image only.
