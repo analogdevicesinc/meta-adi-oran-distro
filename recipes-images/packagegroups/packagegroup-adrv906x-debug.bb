@@ -32,4 +32,5 @@ RDEPENDS:${PN} = " \
     i2c-tools \
     net-tools \
     adrv906x-debug-files \
+    testptp \ 
     "
