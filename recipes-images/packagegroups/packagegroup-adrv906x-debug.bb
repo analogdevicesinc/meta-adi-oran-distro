@@ -33,4 +33,7 @@ RDEPENDS:${PN} = " \
     net-tools \
     adrv906x-debug-files \
     testptp \ 
+    stress-ng \
+    sysbench \
+    iperf2 \
     "
