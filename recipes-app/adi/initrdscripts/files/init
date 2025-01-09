@@ -123,20 +123,12 @@ else
     exit 1
 fi;
 
-# Workaround: Prevent ./init from accessing partitions before being ready.
+# Workaround: Prevent ./init from accessing eMMC partitions before being ready.
 #             Otherwise, the access fails and the kernel resets the system.
-#             eMMC HSx00 modes configuration sometimes completes after this point.
+#             eMMC HSx00 initialization sometimes ends after this point.
 if [ "${BOOT_DEV_ID}" = "emmc0" ]; then
-    counter=0
-    while true
-    do
-        if [ -n "$(grep mmcblk0 /proc/partitions)" ]; then break; fi;
-
-        # Wait up to 1s
-        counter=$((counter+1))
-        if [ "$counter" -eq "10" ]; then echo "Error: eMMC partitions are not ready"; break; fi
-        sleep 0.1
-    done
+# TODO:Find a better way to check if eMMC is ready
+    sleep 1;
 fi;
 
 # Find the rootfs partition by name
