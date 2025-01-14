@@ -210,6 +210,7 @@ function wait_for_programming(){
 		if grep -q "PROGRAMMING SUCCESS" output.txt
 		then
 			echo Programming sequence succeeded.
+			rm output.txt
 			break
 		fi
 
@@ -221,9 +222,8 @@ function wait_for_programming(){
 		fi
 		done
 
-	# Kill the background process and remove the output file so we don't mess up future runs
+	# Kill the background process
 	pkill -P $$
-	rm output.txt
 
 	return $retcode
 }
