@@ -45,6 +45,7 @@ IMAGE_INSTALL:append = " \
     openssh-sftp-server \
     tzdata \
     cpu-cores-alive \
+    collect-error-logs \
     "
 
 IMAGE_INSTALL:append:titan = " pushbutton-mon"

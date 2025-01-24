@@ -1,0 +1,42 @@
+#!/bin/sh
+
+NAME=collect_error_logs
+PIDFILE=/var/run/${NAME}.pid
+DAEMON=/usr/sbin/collect-boot-runtime-logs.sh
+DESC="Adrv906x collect boot and runtime error messages"
+
+set -e
+
+test -x ${DAEMON} || exit 0
+
+do_start() {
+	start-stop-daemon --start --quiet --background --make-pidfile --pidfile ${PIDFILE} \
+		--startas /bin/sh -- -c "${DAEMON}"
+}
+
+do_stop() {
+	start-stop-daemon --stop --quiet --pidfile ${PIDFILE}
+}
+
+case "$1" in
+  start)
+	echo "Starting $DESC"
+	do_start
+	;;
+  stop)
+	echo "Stopping $DESC"
+	do_stop
+	;;
+  restart|force-reload)
+	echo "Restarting $DESC"
+	do_stop
+	sleep 1
+	do_start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
