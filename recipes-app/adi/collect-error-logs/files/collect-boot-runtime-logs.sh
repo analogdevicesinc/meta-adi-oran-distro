@@ -14,7 +14,7 @@ directory=/data/active/etc/log
 file=$directory/error_warning_messages
 
 # Create file and set permissions
-mkdir $directory
+mkdir -p $directory
 touch $file
 chmod 640 $file
 chown :secure $file
@@ -38,43 +38,15 @@ done
 # Runtime log retrieval
 
 command="/usr/bin/optee_app_adi_runtime_log"  # Command to call OP-TEE TA for retrieval
-type=0   # 1 is for BL31 buffer, 2 is for OP-TEE buffer
 
 # Obtain runtime error/warning messages from runtime logs
 while true
 do
   while read -r line; do
-    # Check for signal of BL31 buffer
-    if echo "$line" | grep -q "BL31 Buffer"
-    then
-      type=1
-      continue
-    # Check for signal of OP-TEE buffer
-    elif echo "$line" | grep -q "OP-TEE Buffer"
-    then
-      type=2
-      continue
-    fi
-
-    # Parse BL31 messages
-    if [ "$type" -eq "1" ]; then
-      if echo "$line" | grep -q "ERROR:"
-      then
-        echo "runtime: $line" >> "$file"
-      elif echo "$line" | grep -q "WARN:"
+    if echo "$line" | grep -q -e "ERROR:" -e "WARN:" -e "E/TC:" -e "W/TC:"
       then
         echo "runtime: $line" >> "$file"
       fi
-    # Parse OP-TEE messages
-    elif [ "$type" -eq "2" ]; then
-      if echo "$line" | grep -q "E/TC:"
-      then
-        echo "runtime: $line" >> "$file"
-      elif echo "$line" | grep -q "W/TC:"
-      then
-        echo "runtime: $line" >> "$file"
-      fi
-    fi
   done < <(eval "$command")
 
   # Repeat runtime log retrieval every 5 seconds
