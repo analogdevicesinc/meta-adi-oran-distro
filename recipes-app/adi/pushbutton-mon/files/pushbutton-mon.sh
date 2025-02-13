@@ -26,7 +26,7 @@ pushbutton_mon()
         for((i=1; i<6; i++))
         do
             # read gpio signal value
-            VALS[i]=$(gpioget "${GPIO_CTRL}" "${LINE_NO}")
+            VALS[i]=$(gpioget -a -c "${GPIO_CTRL}" "${LINE_NO}")
             echo -e "\nval = ${VALS[i]}!\n"  &> /dev/null
             sleep $delay
         done
