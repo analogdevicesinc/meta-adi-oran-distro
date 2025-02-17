@@ -1,0 +1,21 @@
+#! /bin/sh
+set -e
+
+PIDFILE=/var/run/.pid
+
+# source function library
+. /etc/init.d/functions
+
+case "$1" in
+  start)
+        # device 0 channel 12 - Titan primary
+        echo 1 > /sys/bus/iio/devices/iio\:device0/out_voltage12_en
+        echo 1000000 >  /sys/bus/iio/devices/iio\:device0/out_voltage12_raw
+        ;;
+  stop)
+        ;;
+  *)
+        echo "Usage: /etc/init.d/reduce-fan-speed {start|stop}"
+        exit 1
+esac
+exit 0

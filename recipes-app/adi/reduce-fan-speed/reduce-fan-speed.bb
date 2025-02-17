@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 COMPATIBLE_MACHINE = "titan-*|denali-*"
 
 RDEPENDS:${PN} = " bash"
-
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/${MACHINE}:${THISDIR}/files:${THISDIR}"
 SRC_URI = " \
         file://reduce-fan-speed \
     "

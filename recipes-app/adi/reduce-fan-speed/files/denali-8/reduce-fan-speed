@@ -8,13 +8,13 @@ PIDFILE=/var/run/.pid
 
 case "$1" in
   start)
-        # channel 12 - Titan
-        echo 1 > /sys/bus/iio/devices/iio\:device0/out_voltage12_en
-        echo 1000000 >  /sys/bus/iio/devices/iio\:device0/out_voltage12_raw
-
-        # channel 13 - Denali
+        #  device 0 channel 13 - Denali primary
         echo 1 > /sys/bus/iio/devices/iio\:device0/out_voltage13_en
         echo 1000000 >  /sys/bus/iio/devices/iio\:device0/out_voltage13_raw
+
+        #  device 1 channel 13 - Denali secondary 
+        echo 1 > /sys/bus/iio/devices/iio\:device1/out_voltage13_en
+        echo 1000000 >  /sys/bus/iio/devices/iio\:device1/out_voltage13_raw
         ;;
   stop)
         ;;
