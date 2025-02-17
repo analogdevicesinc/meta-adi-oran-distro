@@ -11,10 +11,10 @@ export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
 case "$1" in
   start)
-        gpioset -t0 -c gpiochip0 74=1
+        echo 1 > /sys/class/leds/ds1/brightness
         ;;
   stop)
-        gpioset -t0 -c gpiochip0 74=0
+        echo 0 > /sys/class/leds/ds1/brightness
         ;;
   *)
         echo "Usage: /etc/init.d/linux-ready-led {start|stop}"
