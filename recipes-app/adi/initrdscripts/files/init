@@ -139,8 +139,9 @@ ROOTFS_PART=${ROOTFS_DEV}p${ROOTFS_PART_NUM}
 # Find and source the rootfs configuration file
 if [ ! -f /etc/rootfs-cfg.env ]
 then
+    # Set reset cause to image verification failure and reboot
     echo "/etc/rootfs-cfg.env is missing"
-    echo 1 > /sys/kernel/err/reset_cause
+    echo 2 > /sys/kernel/err/reset_cause
     reboot -f now
 fi
 source /etc/rootfs-cfg.env
