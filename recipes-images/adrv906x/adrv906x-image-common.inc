@@ -1,8 +1,8 @@
 SUMMARY = "ADRV906x image"
 
-IMAGE_INSTALL = "packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
-
-IMAGE_INSTALL:append = " \
+IMAGE_INSTALL = " \
+    packagegroup-core-boot \
+    ${CORE_IMAGE_EXTRA_INSTALL} \
     packagegroup-adrv906x-essential \
     "
 
@@ -21,7 +21,6 @@ inherit extrausers
 require access-controls.inc
 
 EXTRA_IMAGE_FEATURES:append = " read-only-rootfs data-partition"
-IMAGE_INSTALL:append = " packagegroup-adrv906x-essential"
 IMAGE_INSTALL:append = " \
     gptfdisk \
     iproute2 \
@@ -48,13 +47,6 @@ IMAGE_INSTALL:append = " \
     cpu-cores-alive \
     collect-error-logs \
     "
-
-# Note:
-# Temporary workaround to install both libgpiod 1.x.x and 2.x.x (see recipes-support/libgpiod/README)
-# TODO use libgpiod and libgpiod-tools after upgrading to libgpiod 2.x.x
-IMAGE_INSTALL:append = " \
-    libgpiod1 \
-"
 
 IMAGE_INSTALL:append:titan = " pushbutton-mon"
 IMAGE_INSTALL:append:titan-4 = " adrv906x-qsfp-sfp-control"
