@@ -22,4 +22,5 @@ RDEPENDS:${PN} = " \
 	os-release \
 	swupdate \
 	swupdate-lua \
+	wpa-supplicant \
 	"

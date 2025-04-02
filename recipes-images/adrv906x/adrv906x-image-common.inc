@@ -88,6 +88,7 @@ IMAGE_DATA_PART_FILES_WITH_DFLTS = " \
     /etc/logrotate.conf \
     /etc/logrotate-dmesg.conf \
     /etc/logrotate.d \
+    /etc/wpa_supplicant.conf \
     "
 
 # the software update process deals with large files -- too large for tmpfs.
