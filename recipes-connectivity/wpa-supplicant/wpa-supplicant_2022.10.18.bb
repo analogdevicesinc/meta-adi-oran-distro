@@ -9,6 +9,7 @@ DEPENDS = "dbus libnl openssl"
 SRCREV  = "06800f612f4bf7d90d276bff0ede4d35752b0357"
 SRC_URI = "git://w1.fi/hostap.git;protocol=https;branch=main \
            file://wpa_supplicant_macsec_hw_offload.patch \
+           file://wpa_supplicant.conf-adrv906x \
           "
 PV = "2.10+git${SRCREV}"
 PACKAGECONFIG ??= "gnutls"
@@ -22,7 +23,11 @@ CVE_PRODUCT = "wpa_supplicant"
 
 S = "${WORKDIR}/git"
 
-FILES_${PN} += "/usr/sbin/*"
+FILES:${PN} += " \
+	${sbindir}/wpa_supplicant \
+	${docdir}/wpa_supplicant/* \
+	${sysconfdir}/wpa_supplicant.conf \
+"
 
 do_configure () {
 	${MAKE} -C wpa_supplicant clean
@@ -56,6 +61,9 @@ do_install () {
 
 	install -d ${D}${docdir}/wpa_supplicant
 	install -m 644 ${S}/README ${S}/wpa_supplicant/wpa_supplicant.conf ${D}${docdir}/wpa_supplicant
+
+	install -d ${D}${sysconfdir}
+	install -m 644 ${WORKDIR}/wpa_supplicant.conf-adrv906x ${D}${sysconfdir}/wpa_supplicant.conf
 }
 
 pkg_postinst_wpa () {

@@ -1,0 +1,16 @@
+ctrl_interface=/var/run/wpa_supplicant
+eapol_version=3
+ap_scan=0
+fast_reauth=1
+
+network={
+    key_mgmt=NONE
+    eapol_flags=0
+    macsec_policy=1
+    # 0: 128 bit key
+    # 1: 256 bit key
+    macsec_csindex=0
+
+    mka_cak=1f4bd308d4ac4f555534f1d02eb047a6
+    mka_ckn=824b97793d117c74e5a2bdb68c351809b614de6a56b672161eb0f0c798a76f77
+}
