@@ -10,7 +10,6 @@ IMAGE_INSTALL:append = " \
 # Set user/group/mode policy for any rootfs files
 IMAGE_SECURITY_POLICY_SETTINGS = " \
     /etc/network/interfaces,0644,root:network; \
-    /opt/adi/adrv906x,,-R adrv906x_server:adrv906x_server; \
     "
 
 # Set user accounts, groups, group membership
