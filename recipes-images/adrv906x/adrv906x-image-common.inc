@@ -5,7 +5,6 @@ IMAGE_INSTALL = " \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     packagegroup-adrv906x-essential \
     "
-
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 
 # needs to be in sync with the size in adrv906x_mkext4fs()

@@ -26,7 +26,6 @@ RDEPENDS:${PN} = " \
     spidev-test \
     ldd \
     e2fsprogs \
-    perf \
     iperf2 \
     iperf3 \
     i2c-tools \

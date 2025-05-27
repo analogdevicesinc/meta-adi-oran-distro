@@ -14,7 +14,6 @@ IMAGE_FEATURES = ""
 # Do not pollute the initrd image with rootfs extra features (as debug-tweaks)
 EXTRA_IMAGE_FEATURES = ""
 
-IMAGE_NAME_SUFFIX ?= ""
 IMAGE_LINGUAS = ""
 
 LICENSE = "MIT"

@@ -1,7 +1,7 @@
 require adrv906x-image-common.inc
 
 adrv906x_mkext4fs () {
-    mkfs.ext4 ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.ext4 -d ${IMAGE_ROOTFS} -b 4096 ${IMAGE_ROOTFS_SIZE}K
+    mkfs.ext4 ${IMGDEPLOYDIR}/${IMAGE_NAME}.ext4 -d ${IMAGE_ROOTFS} -b 4096 ${IMAGE_ROOTFS_SIZE}K
 }
 
 IMAGE_CMD:ext4 = "adrv906x_mkext4fs"

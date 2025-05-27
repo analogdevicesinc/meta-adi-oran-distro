@@ -7,7 +7,8 @@ DM_VERITY_IMAGE_DATA_BLOCK_SIZE ?= "4096"
 DM_VERITY_IMAGE_HASH_BLOCK_SIZE ?= "4096"
 DM_VERITY_IMAGE_FEC_ROOTS ?= "2"
 
-process_verity:append() {
+create_verity_environment() {
+    local ENV="${STAGING_VERITY_DIR}/${IMAGE_BASENAME}.$TYPE.verity.env"
     echo "HASH_SIZE=$HASH_SIZE" >> $ENV
     if [ "$FEC_ENABLED" -eq 0 ]; then
         echo "FEC_ENABLED=0" >> $ENV
@@ -22,7 +23,7 @@ process_verity:append() {
 
 verity_setup() {
     local TYPE=$1
-    local INPUT=${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$TYPE
+    local INPUT=${IMAGE_NAME}.$TYPE
     local SIZE=$(stat --printf="%s" $INPUT)
     local OUTPUT=$INPUT.verity
     local ENABLED=${DM_VERITY_ENABLED}
@@ -30,6 +31,8 @@ verity_setup() {
     local HASH_SIZE
     local FEC_SIZE
     local VERITY_OPTS
+
+    install -d ${STAGING_VERITY_DIR}
 
     VERITY_OPTS="--data-block-size=${DM_VERITY_IMAGE_DATA_BLOCK_SIZE} --hash-block-size=${DM_VERITY_IMAGE_HASH_BLOCK_SIZE}"
     [ "$FEC_ENABLED" -ne 0 ] && VERITY_OPTS="${VERITY_OPTS} --fec-device=rootfs.fec --fec-roots=${DM_VERITY_IMAGE_FEC_ROOTS}"
@@ -41,12 +44,26 @@ verity_setup() {
     HASH_SIZE=$(stat --printf="%s" rootfs.hash)
     FEC_SIZE=$(stat --printf="%s" rootfs.fec)
     cat verity_output.txt | process_verity
+    create_verity_environment
     cat rootfs.$TYPE rootfs.hash rootfs.fec > $OUTPUT
     rm rootfs.$TYPE rootfs.hash rootfs.fec verity_output.txt
 }
 
-python __anonymous() {
-    # create a compressed version of the rootfs as well. this is useful for swupdate.
+def get_verity_fstypes(d):
+    verity_image = d.getVar('DM_VERITY_IMAGE')
     verity_type = d.getVar('DM_VERITY_IMAGE_TYPE')
-    d.appendVar('IMAGE_FSTYPES', ' %s.verity.gz' % verity_type)
-}
+    verity_hash = d.getVar('DM_VERITY_SEPARATE_HASH')
+    pn = d.getVar('PN')
+
+    fstypes = ""
+    if not pn.endswith(verity_image):
+        return fstypes # This doesn't concern this image
+
+    fstypes = verity_type + ".verity"
+    if verity_hash == "1":
+        fstypes += " vhash"
+
+    # create a compressed version of the rootfs as well. this is useful for swupdate.
+    fstypes += " " + verity_type + ".verity.gz"
+
+    return fstypes

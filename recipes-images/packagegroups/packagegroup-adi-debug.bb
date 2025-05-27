@@ -32,7 +32,6 @@ RDEPENDS:${PN} = " \
 	ldd \
 	valgrind \
 	netsniff-ng \
-	perf \
 	iperf2 \
 	iperf3 \
 	i2c-tools \
