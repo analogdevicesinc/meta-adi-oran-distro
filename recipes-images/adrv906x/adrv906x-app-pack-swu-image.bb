@@ -7,6 +7,7 @@ DEPENDS:append = " app-pack"
 require adrv906x-partitions.inc
 APP_PACK_IMAGE ?= "app_pack.bin"
 HWREV ?= "A"
+IMAGE_NAME_SUFFIX = ""
 
 inherit swupdate
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"

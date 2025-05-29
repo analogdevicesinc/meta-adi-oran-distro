@@ -6,6 +6,7 @@ DEPENDS:append = " ${DM_VERITY_IMAGE}"
 do_swuimage[depends] = "${DM_VERITY_IMAGE}:do_image_complete"
 
 require adrv906x-partitions.inc
+IMAGE_NAME_SUFFIX = ""
 HWREV ?= "A"
 
 inherit swupdate
