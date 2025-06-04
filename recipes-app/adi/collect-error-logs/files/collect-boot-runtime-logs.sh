@@ -14,10 +14,13 @@ directory=/data/active/etc/log
 file=$directory/error_warning_messages
 
 # Create file and set permissions
-mkdir -p $directory
-touch $file
-chmod 640 $file
-chown :secure $file
+mkdir -p "$directory"
+if [ -f "$file" ]; then
+  mv "$file" "$file.previous"
+fi
+touch "$file"
+chmod 640 "$file"
+chown :secure "$file"
 
 
 # Boot log retrieval
