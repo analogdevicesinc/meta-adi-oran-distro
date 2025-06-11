@@ -1,5 +1,5 @@
 # Group-based device access controls
-KERNEL=="gpiochip0", OWNER:="root", GROUP:="gpio"
+KERNEL=="gpiochip*", OWNER:="root", GROUP:="gpio"
 KERNEL=="sram_mmap*", OWNER:="root", GROUP:="sram_mmap"
 KERNEL=="tee0", OWNER:="root", GROUP:="tee"
 KERNEL=="mtdblock3", OWNER:="root", GROUP:="bootcfg"
