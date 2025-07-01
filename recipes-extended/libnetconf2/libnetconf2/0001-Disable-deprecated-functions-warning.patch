@@ -1,0 +1,21 @@
+From 2e7e707ba2bea0691902ec0d02590ae8e496b540 Mon Sep 17 00:00:00 2001
+From: Woodrow Barlow <woodrow.barlow@analog.com>
+Date: Wed, 2 Jul 2025 18:43:04 +0000
+Subject: [PATCH] Disable deprecated functions warning
+
+---
+ src/session_server_ssh.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/session_server_ssh.c b/src/session_server_ssh.c
+index d8c3ad4..3a515cf 100644
+--- a/src/session_server_ssh.c
++++ b/src/session_server_ssh.c
+@@ -14,6 +14,7 @@
+  */
+ 
+ #define _GNU_SOURCE
++#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+ 
+ #include "config.h" /* Expose HAVE_LIBPAM and HAVE_SHADOW */
+ 

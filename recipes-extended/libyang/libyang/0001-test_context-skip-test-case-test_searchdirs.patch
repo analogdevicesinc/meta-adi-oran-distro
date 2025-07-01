@@ -1,0 +1,26 @@
+From 5c2b84b10c801e2fe3fd731bfaaca94bd498bd41 Mon Sep 17 00:00:00 2001
+From: Yi Zhao <yi.zhao@windriver.com>
+Date: Wed, 22 Mar 2023 16:03:56 +0800
+Subject: [PATCH] test_context: skip test case test_searchdirs
+
+Skip test case test_searchdirs as it searchs the source code directory.
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Yi Zhao <yi.zhao@windriver.com>
+---
+ tests/utests/basic/test_context.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/tests/utests/basic/test_context.c b/tests/utests/basic/test_context.c
+index 116b2ce36..4e96f4e96 100644
+--- a/tests/utests/basic/test_context.c
++++ b/tests/utests/basic/test_context.c
+@@ -1110,7 +1110,6 @@ int
+ main(void)
+ {
+     const struct CMUnitTest tests[] = {
+-        UTEST(test_searchdirs),
+         UTEST(test_options),
+         UTEST(test_models),
+         UTEST(test_imports),

@@ -1,0 +1,40 @@
+From 589f7e77c9ec6acd9552e222943b5d5fb7e0a3d8 Mon Sep 17 00:00:00 2001
+From: Woodrow Barlow <woodrow.barlow@analog.com>
+Date: Thu, 3 Jul 2025 15:41:24 +0000
+Subject: [PATCH] Do not use hard-coded tar path
+
+---
+ CMakeLists.txt                  | 6 ------
+ src/executables/bin_common.h.in | 2 +-
+ 2 files changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 271b2d2..bb56b07 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -567,12 +567,6 @@ find_package(Threads REQUIRED)
+ target_link_libraries(sysrepo ${CMAKE_THREAD_LIBS_INIT})
+ set(CMAKE_REQUIRED_LIBRARIES pthread)
+ 
+-# tar
+-find_program(TAR_BINARY "tar")
+-if(NOT TAR_BINARY)
+-    message(FATAL_ERROR "tar binary was not found.")
+-endif()
+-
+ # generate files
+ configure_file("${PROJECT_SOURCE_DIR}/src/config.h.in" "${PROJECT_BINARY_DIR}/config.h" ESCAPE_QUOTES @ONLY)
+ configure_file("${PROJECT_SOURCE_DIR}/sysrepo.pc.in" "${PROJECT_BINARY_DIR}/sysrepo.pc" @ONLY)
+diff --git a/src/executables/bin_common.h.in b/src/executables/bin_common.h.in
+index 06ec842..2390375 100644
+--- a/src/executables/bin_common.h.in
++++ b/src/executables/bin_common.h.in
+@@ -33,7 +33,7 @@
+ #define SRPD_PLG_PATH "@SRPD_PLUGINS_PATH@"
+ 
+ /** path to tar executable */
+-#define SRPD_TAR_BINARY "@TAR_BINARY@"
++#define SRPD_TAR_BINARY "tar"
+ 
+ /** default data format for sysrepocfg */
+ #define SRCFG_DEFAULT_FORMAT @SYSREPOCFG_DEFAULT_LYD_FORMAT@
