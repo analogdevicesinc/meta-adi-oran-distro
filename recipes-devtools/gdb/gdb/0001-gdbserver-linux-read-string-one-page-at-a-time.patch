@@ -1,0 +1,75 @@
+From c83cdb8e2f39cc1693abdc214b14880e71a1d7ef Mon Sep 17 00:00:00 2001
+From: Rodrigo Alencar <rodrigo.alencar@analog.com>
+Date: Wed, 9 Jul 2025 07:11:26 -0400
+Subject: [PATCH] gdbserver: linux: read string one page at a time
+Upstream-Status: Inappropriate [Not upstreamable]
+
+verifying that the end of the string is found.
+the procedure avoids accessing other proc mappings when using
+fixed-length read of 4096 bytes during link_map read from r_debug
+---
+ gdbserver/linux-low.cc | 41 ++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 40 insertions(+), 1 deletion(-)
+
+diff --git a/gdbserver/linux-low.cc b/gdbserver/linux-low.cc
+index 40b6a907..771a742b 100644
+--- a/gdbserver/linux-low.cc
++++ b/gdbserver/linux-low.cc
+@@ -5362,6 +5362,45 @@ linux_read_memory (CORE_ADDR memaddr, unsigned char *myaddr, int len)
+   return the_target->read_memory (memaddr, myaddr, len);
+ }
+ 
++static int
++linux_read_string (CORE_ADDR memaddr, unsigned char *myaddr, int maxlength)
++{
++  int pagesize = sysconf (_SC_PAGE_SIZE);
++  bool done = false;
++  unsigned char *bufptr = myaddr;
++  int ret;
++
++  while (!done && maxlength > 0)
++    {
++      CORE_ADDR endaddr = (memaddr + pagesize) & ~(pagesize - 1);
++      int len = (int)(endaddr - memaddr);
++
++      if (len > maxlength) len = maxlength;
++
++      /* read up to the page limit */
++      ret = linux_read_memory (memaddr, bufptr, len);
++      if (ret != 0)
++	return ret;
++
++      /* next read */
++      memaddr += len;
++      maxlength -= len;
++      /* verify whether the string ends */
++      while (len > 0)
++	{
++	  if (*bufptr == '\0')
++	    {
++	      done = true;
++	      break;
++	    }
++
++	  bufptr++;
++	  len--;
++	}
++    }
++
++  return 0;
++}
+ 
+ /* Helper for read_memory/write_memory using /proc/PID/mem.  Because
+    we can use a single read/write call, this can be much more
+@@ -6528,7 +6567,7 @@ read_link_map (std::string &document, CORE_ADDR lmid, CORE_ADDR lm_addr,
+       /* Not checking for error because reading may stop before we've got
+ 	 PATH_MAX worth of characters.  */
+       libname[0] = '\0';
+-      linux_read_memory (l_name, libname, sizeof (libname) - 1);
++      linux_read_string (l_name, libname, sizeof (libname) - 1);
+       libname[sizeof (libname) - 1] = '\0';
+       if (libname[0] != '\0')
+ 	{
+-- 
+2.49.0
+
