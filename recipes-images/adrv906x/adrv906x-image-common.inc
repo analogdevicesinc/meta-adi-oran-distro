@@ -44,7 +44,6 @@ IMAGE_INSTALL:append = " \
     linuxptp \
     openssh-sftp-server \
     tzdata \
-    cpu-cores-alive \
     collect-error-logs \
     "
 
