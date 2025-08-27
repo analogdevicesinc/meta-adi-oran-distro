@@ -23,5 +23,5 @@ RDEPENDS:${PN} = " \
 	swupdate \
 	swupdate-lua \
 	wpa-supplicant \
-	netopeer2-server \
+	netopeer2 \
 	"

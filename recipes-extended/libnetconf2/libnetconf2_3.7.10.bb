@@ -7,9 +7,10 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=08a5578c9bab06fb2ae84284630b973f"
 
 SRC_URI = "git://github.com/CESNET/libnetconf2;protocol=https;branch=master \
            file://0001-Disable-deprecated-functions-warning.patch \
+           file://0002-modules-iana-crypt-hash-revision-upgrade.patch \
            "
-SRCREV = "572d92e2b79a793fcb600fab31385452820699af"
-PV = "3.7.1"
+SRCREV = "61fbe731908809f88a187f223d43718479a7e0da"
+PV = "3.7.10"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 

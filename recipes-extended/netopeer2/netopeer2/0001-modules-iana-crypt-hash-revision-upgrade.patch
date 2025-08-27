@@ -1,0 +1,25 @@
+From fcfabbca6def4c39340de7458dfdac27415070f0 Mon Sep 17 00:00:00 2001
+From: Rodrigo Alencar <rodrigo.alencar@analog.com>
+Date: Tue, 2 Sep 2025 07:48:27 -0400
+Subject: [PATCH] modules: iana-crypt-hash: revision upgrade
+
+---
+ scripts/common.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/common.sh b/scripts/common.sh
+index 3e34f16..7d565ad 100644
+--- a/scripts/common.sh
++++ b/scripts/common.sh
+@@ -24,7 +24,7 @@ LN2_MODULES=(
+ "iana-ssh-public-key-algs@2022-06-16.yang"
+ "iana-tls-cipher-suite-algs@2022-06-16.yang"
+ "ietf-x509-cert-to-name@2014-12-10.yang"
+-"iana-crypt-hash@2014-04-04.yang -e crypt-hash-md5 -e crypt-hash-sha-256 -e crypt-hash-sha-512"
++"iana-crypt-hash@2014-08-06.yang -e crypt-hash-md5 -e crypt-hash-sha-256 -e crypt-hash-sha-512"
+ "ietf-crypto-types@2023-12-28.yang -e cleartext-passwords -e cleartext-private-keys"
+ "ietf-keystore@2023-12-28.yang -e central-keystore-supported -e inline-definitions-supported -e asymmetric-keys"
+ "ietf-truststore@2023-12-28.yang -e central-truststore-supported -e inline-definitions-supported -e certificates -e public-keys"
+-- 
+2.50.1
+

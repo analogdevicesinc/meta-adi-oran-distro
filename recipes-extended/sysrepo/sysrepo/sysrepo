@@ -7,25 +7,34 @@ EXEC_PATH="/usr/bin"
 SYSREPOPLUGIND_EXEC="sysrepo-plugind"
 SERVER_OPTS=" -d -v 1"
 
+SR_REPO_PATH="/data/active/etc/sysrepo"
+NP2_SCRIPTS_PATH="/usr/share/netopeer2/scripts"
+
 init_sysrepo() {
+    export SYSREPOCFG_EXECUTABLE="/usr/bin/sysrepocfg"
+    export SYSREPOCTL_EXECUTABLE="/usr/bin/sysrepoctl"
+    export OPENSSL_EXECUTABLE="/usr/bin/openssl"
+
+    export LN2_MODULE_DIR="/usr/share/yang/modules/libnetconf2"
     export NP2_MODULE_DIR="/usr/share/yang/modules/netopeer2"
     export NP2_MODULE_PERMS="600"
     export NP2_MODULE_OWNER="root"
     export NP2_MODULE_GROUP="root"
     if [ -x /usr/bin/sysrepoctl ]; then
-        sh /etc/netopeer2/scripts/setup.sh
+        sh $NP2_SCRIPTS_PATH/setup.sh
     fi
     if [ -x /usr/bin/sysrepocfg ]; then
-        sh /etc/netopeer2/scripts/merge_hostkey.sh
-        sh /etc/netopeer2/scripts/merge_config.sh
+        sh $NP2_SCRIPTS_PATH/merge_hostkey.sh
+        sh $NP2_SCRIPTS_PATH/merge_config.sh
     fi
-    touch /etc/sysrepo/init
+    mkdir -p $SR_REPO_PATH
+    touch $SR_REPO_PATH/init
 }
 
 
 case "$1" in
     start)
-        test -r /etc/sysrepo/init || init_sysrepo
+        test -r $SR_REPO_PATH/init || init_sysrepo
         start-stop-daemon --start --background --exec $EXEC_PATH/$SYSREPOPLUGIND_EXEC -- $SERVER_OPTS
         ;;
     stop)

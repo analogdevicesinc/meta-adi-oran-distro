@@ -7,35 +7,40 @@ SRC_URI = "git://github.com/sysrepo/sysrepo;protocol=https;branch=master \
            ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'file://sysrepo','', d)} \
            ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'file://sysrepod.service','', d)} \
            file://0001-Do-not-use-hard-coded-tar-path.patch \
+           file://0002-modules-iana-if-types-revision-upgrade.patch \
            "
-SRCREV = "b2d60c137aa5179af2af0ce1243d4147c4e5f974"
-PV = "3.6.11"
+SRCREV = "1b720b196f630f348d9e0c131d326b3fb8c6aca7"
+PV = "3.7.11"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
 DEPENDS = "libyang"
+
 inherit cmake pkgconfig
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'update-rc.d', '', d)}
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)}
-BBCLASSEXTEND = "native"
+BBCLASSEXTEND = "native nativesdk"
 
 EXTRA_OECMAKE = " \
     -DCMAKE_INSTALL_PREFIX:PATH=${prefix} \
     -DCMAKE_BUILD_TYPE:String=Release \
-    -DBUILD_EXAMPLES:String=False \
-    -DENABLE_TESTS:String=False \
-    -DREPOSITORY_LOC:PATH=${sysconfdir}/sysrepo \
-    -DCALL_TARGET_BINS_DIRECTLY=False \
-    -DGEN_LANGUAGE_BINDINGS:String=False \
+    -DENABLE_EXAMPLES:String=OFF \
+    -DENABLE_TESTS:String=OFF \
+    -DREPO_PATH:PATH=/data/active/etc/sysrepo \
 "
 
 SYSTEMD_PACKAGES = "${PN}"
 SYSTEMD_SERVICE:${PN} = "sysrepod.service"
 SYSTEMD_AUTO_ENABLE:${PN} = "disable"
 
+INITSCRIPT_NAME = "sysrepo"
+INITSCRIPT_PARAMS = "disable"
+
 RDEPENDS:${PN} += "tar"
 
 do_install:append:class-target () {
     install -d ${D}${sysconfdir}/init.d
+
     if ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'true', 'false', d)}; then
         install -m 0775 ${WORKDIR}/sysrepo ${D}${sysconfdir}/init.d/
         install -d ${D}${libdir}/sysrepo/plugins
@@ -47,4 +52,7 @@ do_install:append:class-target () {
     fi
 }
 
-FILES:${PN}:append = " ${libdir}/sysrepo-plugind/* ${datadir}/yang/modules/sysrepo/*"
+FILES:${PN}:append = " \
+    ${libdir}/sysrepo-plugind/* \
+    ${datadir}/yang/modules/sysrepo/* \
+    /data/active/etc/sysrepo"

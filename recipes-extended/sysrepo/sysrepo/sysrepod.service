@@ -24,13 +24,19 @@ After=local-fs.target
 RemainAfterExit=true
 Type=oneshot
 
-ExecStartPre=/bin/bash -c 'NP2_MODULE_DIR="/usr/share/yang/modules/netopeer2" \
+ExecStartPre=/bin/bash -c 'if [ ! -f /data/active/etc/sysrepo/init ]; then \
+			   SYSREPOCFG_EXECUTABLE="/usr/bin/sysrepocfg" \
+			   SYSREPOCTL_EXECUTABLE="/usr/bin/sysrepoctl" \
+			   OPENSSL_EXECUTABLE="/usr/bin/openssl" \
+			   LN2_MODULE_DIR="/usr/share/yang/modules/libnetconf2" \
+			   NP2_MODULE_DIR="/usr/share/yang/modules/netopeer2" \
 			   NP2_MODULE_PERMS="600" NP2_MODULE_OWNER="root" \
 			   NP2_MODULE_GROUP="root" \
-			   exec /etc/netopeer2/scripts/setup.sh'
-ExecStartPre=/bin/bash /etc/netopeer2/scripts/merge_hostkey.sh
-ExecStartPre=/bin/bash /etc/netopeer2/scripts/merge_config.sh
-ExecStartPre= touch /etc/sysrepo/init
+			   exec /usr/share/netopeer2/scripts/setup.sh && \
+			   exec /usr/share/netopeer2/scripts/merge_hostkey.sh && \
+			   exec /usr/share/netopeer2/scripts/merge_config.sh && \
+			   mkdir -p /data/active/etc/sysrepo && \
+			   touch /data/active/etc/sysrepo/init; fi'
 ExecStart=/usr/bin/sysrepo-plugind
 
 [Install]
