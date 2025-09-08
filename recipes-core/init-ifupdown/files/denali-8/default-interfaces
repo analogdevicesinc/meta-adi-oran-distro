@@ -30,3 +30,17 @@ netmask 255.255.0.0
 auto eth4
 iface eth4 inet dhcp
     post-up /usr/sbin/eth-fallback.sh eth4 192.168.1.30/24
+
+# VLAN configuration example only works for systems with systemd init
+# auto eth0.9
+# iface eth0.9 inet static
+# address 172.16.0.49
+# netmask 255.255.0.0
+# vlan-raw-device eth0
+#
+# auto eth2.9
+# iface eth2.9 inet static
+# address 172.18.0.49
+# netmask 255.255.0.0
+# vlan-raw-device eth2
+
