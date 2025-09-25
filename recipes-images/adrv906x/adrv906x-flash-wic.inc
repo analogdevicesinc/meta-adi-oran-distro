@@ -26,12 +26,15 @@ NOR_FIP_SIZE ??= "0"
 NOR_KERNEL_A_START ??= "0"
 NOR_KERNEL_B_START ??= "0"
 NOR_KERNEL_SIZE ??= "0"
+NOR_OOPS_START ??= "0"
+NOR_OOPS_SIZE ??= "0"
 
 BOOTCTRL_PART_SIZE = "${@convert_size(d.getVar('NOR_BOOTCTRL_SIZE'))}"
 BOOTCFG_PART_SIZE = "${@convert_size(d.getVar('NOR_BOOTCFG_SIZE'))}"
 BOOT_PART_SIZE = "${@convert_size(d.getVar('NOR_BOOT_SIZE'))}"
 FIP_PART_SIZE = "${@convert_size(d.getVar('NOR_FIP_SIZE'))}"
 KERNEL_PART_SIZE = "${@convert_size(d.getVar('NOR_KERNEL_SIZE'))}"
+OOPS_PART_SIZE = "${@convert_size(d.getVar('NOR_OOPS_SIZE'))}"
 
 BOOT_A_PART_OFFSET = "${@convert_offset(d.getVar('NOR_BOOT_A_START'))}"
 BOOT_B_PART_OFFSET = "${@convert_offset(d.getVar('NOR_BOOT_B_START'))}"
@@ -41,6 +44,7 @@ FIP_A_PART_OFFSET = "${@convert_offset(d.getVar('NOR_FIP_A_START'))}"
 FIP_B_PART_OFFSET = "${@convert_offset(d.getVar('NOR_FIP_B_START'))}"
 KERNEL_A_PART_OFFSET = "${@convert_offset(d.getVar('NOR_KERNEL_A_START'))}"
 KERNEL_B_PART_OFFSET = "${@convert_offset(d.getVar('NOR_KERNEL_B_START'))}"
+OOPS_PART_OFFSET = "${@convert_offset(d.getVar('NOR_OOPS_START'))}"
 
 #128MB to meet the nor flash spec.
 IMAGE_TOTAL_SIZE="134217728"
@@ -54,6 +58,7 @@ python do_prepare_recipe_sysroot:prepend() {
     sizes_input += int(d.getVar('NOR_FIP_SIZE'))
     sizes_input += int(d.getVar('NOR_KERNEL_SIZE'))
     sizes_input += int(d.getVar('NOR_KERNEL_SIZE'))
+    sizes_input += int(d.getVar('NOR_OOPS_SIZE'))
     size_nor_flash = int(d.getVar('IMAGE_TOTAL_SIZE'))
 
     if sizes_input > size_nor_flash:

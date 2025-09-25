@@ -26,3 +26,6 @@ part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${KERNEL_FIT_IMAG
 #8. kernel partition(kernel_b, signed FIT)
 part --source rawcopy --sourceparams="file=${DEPLOY_DIR_IMAGE}/${KERNEL_FIT_IMAGE}" --fixed-size ${KERNEL_PART_SIZE} --offset ${KERNEL_B_PART_OFFSET}
 
+#9. kernel partition(oops)
+part --source empty --fixed-size ${OOPS_PART_SIZE} --offset ${OOPS_PART_OFFSET}
+
