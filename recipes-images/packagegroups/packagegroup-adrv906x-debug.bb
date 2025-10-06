@@ -35,4 +35,5 @@ RDEPENDS:${PN} = " \
     stress-ng \
     sysbench \
     iperf2 \
+    uiomem \
     "
