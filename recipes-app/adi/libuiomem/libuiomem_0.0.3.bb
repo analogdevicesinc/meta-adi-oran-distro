@@ -1,0 +1,7 @@
+LICENSE = "CLOSED"
+LIC_FILES_CHKSUM = ""
+
+require libuiomem.inc
+
+SRCREV = "d07a315061459225b1f917c34cbd080cbbad9001"
+
