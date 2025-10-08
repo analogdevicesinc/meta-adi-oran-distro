@@ -1,5 +1,3 @@
-require include/fetch-utils.inc
-
 RPROVIDES:${PN}:append = " uiomem"
 
 SRC_URI = "git://github.com/analogdevicesinc/uiomem.git;branch=main;protocol=https"
