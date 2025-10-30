@@ -61,7 +61,7 @@ PACKAGE_GROUPS_ADRV906X_DEBUG = " \
     packagegroup-adrv906x-debug \
     packagegroup-core-buildessential \
     packagegroup-core-tools-debug \
-    packagegroup-core-tools-profile \
+    perf \
     "
 IMAGE_INSTALL:append = "${@d.getVar('PACKAGE_GROUPS_ADRV906X_DEBUG') if  d.getVar('ADI_CC_BOOT_DEBUG')=='1' else ''}"
 IMAGE_INSTALL:remove = "${@bb.utils.contains('ADI_CC_BOOT_DEBUG', '1', 'nftables', '', d)}"
