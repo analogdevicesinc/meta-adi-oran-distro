@@ -28,6 +28,7 @@ EXTRA_USERS_PARAMS = "\
     groupadd ptp; \
     groupadd secure; \
     groupadd ipc; \
+    groupadd sysrepo; \
     usermod -L -e 1 -s /sbin/nologin root; \
     useradd -p '${ADI_USER_PASSWD}' adi; \
     useradd -M adrv906x_server; \
@@ -35,7 +36,7 @@ EXTRA_USERS_PARAMS = "\
     usermod -a -G adi-oru-uio,bootcfg,sram_mmap,gpio,tee,dialout,shutdown,secure,ipc adrv906x_server; \
     useradd -M adrv906x_ras; \
     usermod -L -e 1 -s /sbin/nologin adrv906x_ras; \
-    usermod -a -G spidev,i2c,eeprom,dialout,gpio,tee,shutdown,ptp,public-uio,ipc adrv906x_ras; \
+    usermod -a -G spidev,i2c,eeprom,dialout,gpio,tee,shutdown,ptp,public-uio,ipc,sysrepo adrv906x_ras; \
     useradd -M swupdate; \
     usermod -L -e 1 -s /sbin/nologin swupdate; \
     usermod -a -G disk,bootcfg,shutdown swupdate; \

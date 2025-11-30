@@ -88,6 +88,11 @@ IMAGE_DATA_PART_EXTRA_DIRS = " \
     /update,777 \
 "
 
+# Sysrepo working directory owner and permissions
+IMAGE_DATA_PART_EXTRA_DIRS:append = " \
+    /etc/sysrepo,775,root:sysrepo \
+"
+
 # Example to add service:
 # IMAGE_INSTALL:append = " example_service"
 # IMAGE_DATA_PART_FILES_WITH_DFLTS:append = " /usr/local/bin/service/example_service/supervise"
