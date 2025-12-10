@@ -12,14 +12,14 @@ index 3e34f16..7d565ad 100644
 --- a/scripts/common.sh
 +++ b/scripts/common.sh
 @@ -24,7 +24,7 @@ LN2_MODULES=(
- "iana-ssh-public-key-algs@2022-06-16.yang"
- "iana-tls-cipher-suite-algs@2022-06-16.yang"
+ "iana-ssh-public-key-algs@2024-10-16.yang"
+ "iana-tls-cipher-suite-algs@2024-10-16.yang"
  "ietf-x509-cert-to-name@2014-12-10.yang"
 -"iana-crypt-hash@2014-04-04.yang -e crypt-hash-md5 -e crypt-hash-sha-256 -e crypt-hash-sha-512"
 +"iana-crypt-hash@2014-08-06.yang -e crypt-hash-md5 -e crypt-hash-sha-256 -e crypt-hash-sha-512"
- "ietf-crypto-types@2023-12-28.yang -e cleartext-passwords -e cleartext-private-keys"
- "ietf-keystore@2023-12-28.yang -e central-keystore-supported -e inline-definitions-supported -e asymmetric-keys"
- "ietf-truststore@2023-12-28.yang -e central-truststore-supported -e inline-definitions-supported -e certificates -e public-keys"
+ "ietf-crypto-types@2024-10-10.yang -e cleartext-passwords -e cleartext-private-keys"
+ "ietf-keystore@2024-10-10.yang -e central-keystore-supported -e inline-definitions-supported -e asymmetric-keys"
+ "ietf-truststore@2024-10-10.yang -e central-truststore-supported -e inline-definitions-supported -e certificates -e public-keys"
 -- 
 2.50.1
 

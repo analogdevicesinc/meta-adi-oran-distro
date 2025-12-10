@@ -9,12 +9,12 @@ SRC_URI = "git://github.com/CESNET/libnetconf2;protocol=https;branch=master \
            file://0001-Disable-deprecated-functions-warning.patch \
            file://0002-modules-iana-crypt-hash-revision-upgrade.patch \
            "
-SRCREV = "61fbe731908809f88a187f223d43718479a7e0da"
-PV = "3.7.10"
+SRCREV = "84c60d815a10a4f9a99f6c003f7232808eb8ac7a"
+PV = "4.1.2"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
-DEPENDS = "libssh openssl libyang libxcrypt curl"
+DEPENDS = "libssh openssl libyang libxcrypt curl virtual/crypt"
 inherit cmake pkgconfig
 BBCLASSEXTEND = "native nativesdk"
 

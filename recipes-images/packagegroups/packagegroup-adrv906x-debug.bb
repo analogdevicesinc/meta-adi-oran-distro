@@ -36,4 +36,5 @@ RDEPENDS:${PN} = " \
     sysbench \
     iperf2 \
     uiomem \
+    libyang-bin \
     "

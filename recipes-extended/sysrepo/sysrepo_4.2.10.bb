@@ -9,8 +9,8 @@ SRC_URI = "git://github.com/sysrepo/sysrepo;protocol=https;branch=master \
            file://0001-Do-not-use-hard-coded-tar-path.patch \
            file://0002-modules-iana-if-types-revision-upgrade.patch \
            "
-SRCREV = "1b720b196f630f348d9e0c131d326b3fb8c6aca7"
-PV = "3.7.11"
+SRCREV = "1a9e66c60e53333f8443188a5e5c9d13153f3de2"
+PV = "4.2.10"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
@@ -27,6 +27,7 @@ EXTRA_OECMAKE = " \
     -DENABLE_EXAMPLES:String=OFF \
     -DENABLE_TESTS:String=OFF \
     -DREPO_PATH:PATH=/data/active/etc/sysrepo \
+    -DPRINTED_CONTEXT_ADDRESS=0 \
 "
 
 SYSTEMD_PACKAGES = "${PN}"
