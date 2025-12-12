@@ -1,0 +1,18 @@
+software: {
+    version = "@@DISTRO_VERSION@@";
+    description = "Factory reset trigger";
+    @@MACHINE@@: {
+		hardware-compatibility: [ "#RE:^\S*$" ];
+		images: (
+		);
+		files: (
+		);
+        scripts: (
+            {
+                filename = "factory-reset-wrapper.sh";
+                type = "shellscript";
+				sha256 = "$swupdate_get_sha256(factory-reset-wrapper.sh)";
+            }
+        );
+    };
+};

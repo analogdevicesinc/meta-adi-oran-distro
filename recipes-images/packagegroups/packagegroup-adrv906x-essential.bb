@@ -22,6 +22,7 @@ RDEPENDS:${PN} = " \
 	os-release \
 	swupdate \
 	swupdate-lua \
+	swu-factory-reset-bundle \
 	wpa-supplicant \
 	netopeer2 \
 	"
