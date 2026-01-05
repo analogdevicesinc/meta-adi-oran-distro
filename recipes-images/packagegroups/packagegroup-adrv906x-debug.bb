@@ -10,6 +10,9 @@ RDEPENDS:${PN} = " \
     devmem2 \
     strace \
     valgrind \
+    valgrind-callgrind \
+    valgrind-cachegrind \
+    valgrind-massif \
     iftop \
     sysstat \
     tcpdump \
