@@ -45,6 +45,7 @@ IMAGE_INSTALL:append = " \
     openssh-sftp-server \
     tzdata \
     collect-error-logs \
+    edac-utils \
     "
 
 IMAGE_INSTALL:append:titan = " pushbutton-mon"
