@@ -14,6 +14,9 @@ mount -n -t tmpfs    tmpfs    /run
 # Pet watchdog
 echo '\0' > "/dev/watchdog"
 
+# Enable panic on uncorrectable ECC errors
+echo 1 > /sys/module/edac_core/parameters/edac_mc_panic_on_ue
+
 # use the /dev/console device node from devtmpfs if possible to not
 # confuse glibc's ttyname_r().
 # This may fail (E.G. booted with console=), and errors from exec will
