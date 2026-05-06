@@ -45,3 +45,9 @@ do_install_ptest () {
 }
 
 FILES:${PN} += "${datadir}/yang/*"
+
+# TODO: Remove when libyang5-based ras-libs prebuilt package is available
+# Pre-built packages (ras-libs, adrv906x-ras) were compiled against libyang.so.4
+# and still carry that RPM Requires until rebuilt against libyang 5. Declaring
+# RPROVIDES here lets DNF satisfy that dep so image assembly succeeds.
+RPROVIDES:${PN} += "libyang.so.4()(64bit)"
