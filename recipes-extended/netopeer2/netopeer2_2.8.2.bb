@@ -13,8 +13,8 @@ SRC_URI = " \
     file://0001-modules-iana-crypt-hash-revision-upgrade.patch \
 "
 
-SRCREV = "e934dbf51a3ebaf89544e6c69d5cebcb210719d9"
-PV = "2.7.0"
+SRCREV = "e9f97f152fed551673001315d617d4c197ba0ee0"
+PV = "2.8.2"
 S = "${WORKDIR}/git"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"

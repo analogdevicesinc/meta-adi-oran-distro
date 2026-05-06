@@ -9,8 +9,8 @@ SRC_URI = "git://github.com/CESNET/libnetconf2;protocol=https;branch=master \
            file://0001-Disable-deprecated-functions-warning.patch \
            file://0002-modules-iana-crypt-hash-revision-upgrade.patch \
            "
-SRCREV = "84c60d815a10a4f9a99f6c003f7232808eb8ac7a"
-PV = "4.1.2"
+SRCREV = "284ee667445c34402ebbe83c5b38344d6283d6ce"
+PV = "4.2.14"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 

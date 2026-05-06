@@ -9,8 +9,8 @@ SRC_URI = "git://github.com/sysrepo/sysrepo;protocol=https;branch=master \
            file://0001-Do-not-use-hard-coded-tar-path.patch \
            file://0002-modules-iana-if-types-revision-upgrade.patch \
            "
-SRCREV = "1a9e66c60e53333f8443188a5e5c9d13153f3de2"
-PV = "4.2.10"
+SRCREV = "b686dd854f330c1a8fcd753abf0dc9becac0032e"
+PV = "4.5.4"
 S = "${WORKDIR}/git"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
