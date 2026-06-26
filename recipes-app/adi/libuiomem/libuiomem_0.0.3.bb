@@ -1,5 +1,5 @@
-LICENSE = "CLOSED"
-LIC_FILES_CHKSUM = ""
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
 require libuiomem.inc
 
