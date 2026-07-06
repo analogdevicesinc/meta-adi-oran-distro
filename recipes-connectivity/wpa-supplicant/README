@@ -1,11 +1,9 @@
-This directory includes wpa-supplicant recipe and files from Comcores MACsec SW release.
+This directory includes wpa-supplicant recipe and files for MACsec MKA with hardware offload.
 
-Comcores creates its own recipe for wpa-supplicant (instead of appending the original recipe in poky).
+Upgraded from wpa_supplicant 2.10 to 2.11. The custom hw_offload patch is no longer needed
+as 2.11 has native MACsec hardware offload support via the macsec_offload config option.
 
-Unfortunately we have to follow this practice to avoid merging conflicts with Comcores future releases.
-
-We will not modify recipes/files as long as possible for the same reason.
-
-Comcores release process: Comcores will notify ADI, ADI engineers will pull the release files from Comcores server.
-
-Current release version: 13.001
+Key changes from the previous recipe:
+- SRCREV updated to hostap_2_11 tag (d4f124e5e112ba1a83fe39dce1e8a788e18c0e40)
+- Removed wpa_supplicant_macsec_hw_offload.patch (functionality is upstream in 2.11)
+- Added macsec_offload=2 (MACSEC_OFFLOAD_MAC) to wpa_supplicant.conf-adrv906x
