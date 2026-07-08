@@ -4,8 +4,8 @@ start() {
         echo "Setting boot successful..."
         /usr/bin/optee_app_boot_successful
         # only write to OTP if temp is >15 degC
-        if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
-                temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+        if [ -f /sys/class/hwmon/hwmon0/temp1_input ]; then
+                temp=$(cat /sys/class/hwmon/hwmon0/temp1_input)
                 if [ $temp -gt 15000 ]; then
                         echo "Temperature is $temp, updating anti-rollback counter..."
                         if /usr/bin/optee_app_enforcement_counter_update; then
