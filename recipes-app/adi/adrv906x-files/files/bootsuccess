@@ -3,11 +3,27 @@
 start() {
         echo "Setting boot successful..."
         /usr/bin/optee_app_boot_successful
+        # only write to OTP if temp is >15 degC
+        if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
+                temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+                if [ $temp -gt 15000 ]; then
+                        echo "Temperature is $temp, updating anti-rollback counter..."
+                        if /usr/bin/optee_app_enforcement_counter_update; then
+                                echo "Anti-rollback counter updated successfully."
+                        else
+                                echo "Failed to update anti-rollback counter."
+                        fi
+                else
+                        echo "Temperature is $temp, not updating anti-rollback counter."
+                fi
+        else
+                echo "Temperature sensor not found, not updating anti-rollback counter."
+        fi
 }
 
 case "$1" in
         start)
-                "$1";;
+                start;;
         stop|restart|reload)
                 ;;
         *)
