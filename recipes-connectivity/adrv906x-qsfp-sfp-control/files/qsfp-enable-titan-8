@@ -9,11 +9,13 @@ PIDFILE=/var/run/qsfp-enable.pid
 case "$1" in
   start)
         echo "Enable fronthaul QSFP transmission and I2C"
-        /usr/bin/gpioset -t0 -c gpiochip0 58=0 65=0
+        # GPIO 58 is QSFP_MODSEL_L (0 enables QSFP I2C bus chip select), 
+        # GPIO 70 is QSFP_LPMODE   (0 allows high power mode)
+        /usr/bin/gpioset -t0 -c gpiochip0 58=0 70=0
         ;;
   stop)
         echo "Disable fronthaul QSFP transmission and I2C"
-        /usr/bin/gpioset -t0 -c gpiochip0 58=1 65=1
+        /usr/bin/gpioset -t0 -c gpiochip0 58=1 70=1
         ;;
   *)
         echo "Usage: /etc/init.d/qsfp-enable {start|stop}"

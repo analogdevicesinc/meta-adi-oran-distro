@@ -49,7 +49,7 @@ IMAGE_INSTALL:append = " \
     "
 
 IMAGE_INSTALL:append:titan = " pushbutton-mon"
-IMAGE_INSTALL:append:titan-4 = " adrv906x-qsfp-sfp-control"
+IMAGE_INSTALL:append:titan-8 = " adrv906x-qsfp-sfp-control"
 IMAGE_INSTALL:append:denali = " \
     pushbutton-mon \
     adrv906x-qsfp-sfp-control \
