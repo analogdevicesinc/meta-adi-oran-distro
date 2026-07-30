@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 COMPATIBLE_MACHINE = "denali|titan-8"
 
 SRC_URI:denali = "file://qsfp-enable-denali"
-SRC_URL:titan-8 = "file://qsfp-enable-titan-8"
+SRC_URI:titan-8 = "file://qsfp-enable-titan-8"
 
 S = "${WORKDIR}"
 
